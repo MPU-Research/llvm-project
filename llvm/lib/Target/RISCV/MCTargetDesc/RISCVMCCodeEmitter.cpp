@@ -92,6 +92,10 @@ public:
                        SmallVectorImpl<MCFixup> &Fixups,
                        const MCSubtargetInfo &STI) const;
 
+  unsigned getMMaskReg(const MCInst &MI, unsigned OpNo,
+                       SmallVectorImpl<MCFixup> &Fixups,
+                       const MCSubtargetInfo &STI) const;
+
   unsigned getRlistOpValue(const MCInst &MI, unsigned OpNo,
                            SmallVectorImpl<MCFixup> &Fixups,
                            const MCSubtargetInfo &STI) const;
@@ -553,6 +557,22 @@ unsigned RISCVMCCodeEmitter::getVMaskReg(const MCInst &MI, unsigned OpNo,
   default:
     llvm_unreachable("Invalid mask register.");
   case RISCV::V0:
+    return 0;
+  case RISCV::NoRegister:
+    return 1;
+  }
+}
+
+unsigned RISCVMCCodeEmitter::getMMaskReg(const MCInst &MI, unsigned OpNo,
+                                         SmallVectorImpl<MCFixup> &Fixups,
+                                         const MCSubtargetInfo &STI) const {
+  MCOperand MO = MI.getOperand(OpNo);
+  assert(MO.isReg() && "Expected a register.");
+
+  switch (MO.getReg()) {
+  default:
+    llvm_unreachable("Invalid mask register.");
+  case RISCV::M0:
     return 0;
   case RISCV::NoRegister:
     return 1;
