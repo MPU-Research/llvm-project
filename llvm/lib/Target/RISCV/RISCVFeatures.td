@@ -1333,6 +1333,16 @@ def HasVendorXqcilo
       AssemblerPredicate<(all_of FeatureVendorXqcilo),
                          "'Xqcilo' (Qualcomm uC Large Offset Load Store Extension)">;
 
+// Matrix Processing Engine (MPE) Extension
+
+def FeatureVendorXMPE
+    : RISCVExtension<0, 1, "Matrix Processing Engine Extension">;
+
+def HasVendorXMPE
+    : Predicate<"Subtarget->hasVendorXMPE()">,
+      AssemblerPredicate<(all_of FeatureVendorXMPE),
+                         "'XMPE' (Matrix Processing Engine Extension)">;
+
 //===----------------------------------------------------------------------===//
 // LLVM specific features and extensions
 //===----------------------------------------------------------------------===//
