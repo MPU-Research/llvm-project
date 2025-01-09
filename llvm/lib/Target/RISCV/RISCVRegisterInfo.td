@@ -223,6 +223,8 @@ class RISCVRegisterClass<list<ValueType> regTypes, int align, dag regList>
     : RegisterClass<"RISCV", regTypes, align, regList> {
   bit IsVRegClass = 0;
   int VLMul = 1;
+  bit isMRegClass = 0;
+  int MLMul = 1;
   int NF = 1;
 
   let Size = !if(IsVRegClass, !mul(VLMul, NF, 64), 0);
@@ -791,6 +793,36 @@ foreach m = LMULList in {
     }
   }
 }
+
+//===----------------------------------------------------------------------===//
+// Matrix registers
+//===----------------------------------------------------------------------===//
+
+foreach Index = !range(0, 32, 1) in {
+  def M#Index : RISCVReg<Index, "m"#Index>, DwarfRegNum<[!add(Index, 128)]>;
+}
+
+def MTYPE : RISCVReg<0, "mtype">;
+def ML    : RISCVReg<0, "ml">;
+def MRL   : RISCVReg<0, "mrl">;
+def MLENB : RISCVReg<0, "mlenb">;
+def MROWB : RISCVReg<0, "mrowb">;
+
+class MReg<list<ValueType> regTypes, dag regList, int Mlmul> 
+    : RISCVRegisterClass<regTypes, 32, regList> {
+  let isMRegClass = 1;
+  let MLMul = Mlmul;
+}
+
+defvar m4x4bool = v16i1;
+defvar m4x4i32 = v16i32;
+defvar m4x4f32 = v16f32;
+
+defvar MatrixRegsVTs = [m4x4i32, m4x4f32];
+defvar MatrixMaskRegsVTs = [m4x4bool];
+
+def MR   : MReg<MatrixRegsVTs, (sequence "M%u", 0, 31), 1>;
+def MMM0 : MReg<MatrixMaskRegsVTs, (add M0), 1>;
 
 //===----------------------------------------------------------------------===//
 // Special registers
