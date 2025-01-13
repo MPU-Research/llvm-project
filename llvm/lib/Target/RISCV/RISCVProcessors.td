@@ -593,3 +593,15 @@ def RP2350_HAZARD3 : RISCVProcessorModel<"rp2350-hazard3",
                                           FeatureStdExtZbkb,
                                           FeatureStdExtZcb,
                                           FeatureStdExtZcmp]>;
+
+def SARGANTANA_MPE : RISCVProcessorModel<"sargantana-mpe",
+                                         NoSchedModel,
+                                         [Feature64Bit,
+                                          FeatureStdExtI,
+                                          FeatureStdExtM,
+                                          FeatureStdExtA,
+                                          FeatureStdExtF,
+                                          FeatureStdExtD,
+                                          FeatureStdExtC,
+                                          FeatureStdExtV,
+                                          FeatureVendorXMPE]>;
