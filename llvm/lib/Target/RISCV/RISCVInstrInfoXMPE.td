@@ -94,3 +94,39 @@ let hasSideEffects = 0, mayLoad = 0, mayStore = 1 in {
   def MST : MPEInstMem<"ms", MPEMemStoreContiguous>;
 } // hasSideEffects = 0, mayLoad = 0, mayStore = 1
 } // Predicates = [HasVendorXMPE]
+
+//===-- ARITHMETIC INSTRUCTIONS -------------------------------------------===//
+
+class MPEInstAluBase<string opcodestr, string argstr, dag outs, dag ins,
+                     MPEAluOp maop, MPEDataType dt>
+    : MPEInstBase<MPEMinorOpAlu, outs, ins, opcodestr, argstr> {
+  bits<5> md;
+  bits<5> ms1;
+  bits<5> ms2;
+
+  let Inst{28} = 0;
+  let Inst{27-26} = dt.Value;
+  let Inst{25} = 1;
+  let Inst{24-20} = ms2;
+  let Inst{19-15} = ms1;
+  let Inst{14-12} = maop.Value;
+  let Inst{11-7} = md;
+}
+
+class MPEInstAlu<string opcodestr, MPEAluOp maop, MPEDataType dt>
+    : MPEInstAluBase<opcodestr, "$md, $ms1, $ms2", (outs MR:$md),
+                     (ins MR:$ms1, MR:$ms2), maop, dt>;
+
+multiclass MPEInstAlu_SUF<string opcodestr, MPEAluOp maop> {
+  def   : MPEInstAlu<opcodestr, maop, MPEIntSigned>;
+  def U : MPEInstAlu<opcodestr # "u", maop, MPEIntUnsigned>;
+  def F : MPEInstAlu<opcodestr # "f", maop, MPEFloat>;
+}
+
+let Predicates = [HasVendorXMPE] in {
+let hasSideEffects = 0, mayLoad = 0, mayStore = 0 in {
+  defm MADD : MPEInstAlu_SUF<"madd", MPEAluAdd>;
+  defm MSUB : MPEInstAlu_SUF<"msub", MPEAluSub>;
+  defm MMAC : MPEInstAlu_SUF<"mmac", MPEAluMac>;
+} // hasSideEffects = 0, mayLoad = 0, mayStore = 0
+} // Predicates = [HasVendorXMPE]
