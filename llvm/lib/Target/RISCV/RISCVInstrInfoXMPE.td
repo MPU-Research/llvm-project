@@ -62,3 +62,35 @@ def MPEFloat       : MPEDataType<0b10>;
 // Instruction formats
 //===----------------------------------------------------------------------===//
 
+//===-- MEMORY INSTRUCTIONS -----------------------------------------------===//
+
+class MPEInstMemBase<string opcodestr, string argstr, MPEMemOp mmop, dag outs,
+                     dag ins>
+    : MPEInstBase<MPEMinorOpMem, outs, ins, opcodestr, argstr> {
+  bits<5> md;
+  bits<5> rs1;
+
+  let Inst{28-26} = 0;
+  let Inst{25} = 1;
+  let Inst{24-20} = 0;
+  let Inst{19-15} = rs1;
+  let Inst{14-12} = mmop.Value;
+  let Inst{11-7} = md;
+}
+
+class MPEInstMem<string opcodestr, MPEMemOp mmop>
+    : MPEInstMemBase<opcodestr, "$md, $rs1", mmop,
+                     (outs MR:$md),
+                     (ins GPRMemZeroOffset:$rs1)>;
+
+let Predicates = [HasVendorXMPE] in {
+let hasSideEffects = 0, mayLoad = 1, mayStore = 0 in {
+  def MLD : MPEInstMem<"ml", MPEMemLoadContiguous>;
+} // hasSideEffects = 0, mayLoad = 1, mayStore = 0
+} // Predicates = [HasVendorXMPE]
+
+let Predicates = [HasVendorXMPE] in {
+let hasSideEffects = 0, mayLoad = 0, mayStore = 1 in {
+  def MST : MPEInstMem<"ms", MPEMemStoreContiguous>;
+} // hasSideEffects = 0, mayLoad = 0, mayStore = 1
+} // Predicates = [HasVendorXMPE]
