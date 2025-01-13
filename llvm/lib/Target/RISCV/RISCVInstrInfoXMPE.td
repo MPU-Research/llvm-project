@@ -95,6 +95,50 @@ let hasSideEffects = 0, mayLoad = 0, mayStore = 1 in {
 } // hasSideEffects = 0, mayLoad = 0, mayStore = 1
 } // Predicates = [HasVendorXMPE]
 
+//===-- MOVE INSTRUCTIONS -------------------------------------------------===//
+
+class MPEInstMovBase<string opcodestr, string argstr, dag outs, dag ins,
+                      MPEMovOp mmov>
+    : MPEInstBase<MPEMinorOpMov, outs, ins, opcodestr, argstr> {
+  bits<5> rd;
+  bits<5> rs1;
+
+  let Inst{28-26} = 0;
+  let Inst{25} = 1;
+  let Inst{24-20} = mmov.Value;
+  let Inst{19-15} = rs1;
+  let Inst{14-12} = 0;
+  let Inst{11-7} = rd;
+}
+
+class MPEInstMov<string opcodestr, MPEMovOp mmov, RegisterClass src,
+                 RegisterClass dst>
+    : MPEInstMovBase<opcodestr, "$rd, $rs1",
+                     (outs dst:$rd),
+                     (ins src:$rs1),
+                     mmov>;
+
+multiclass MPEInstMov_SFVM<string opcodestr> {
+  def MM : MPEInstMov<opcodestr # ".mm", MPEMovMM, MR,    MR>;
+  def XM : MPEInstMov<opcodestr # ".xm", MPEMovXM, GPR,   MR>;
+  def ZX : MPEInstMov<opcodestr # ".zx", MPEMovZX, MR,    GPR>;
+  def ZM : MPEInstMov<opcodestr # ".zm", MPEMovZM, MR,    MR>;
+  def FM : MPEInstMov<opcodestr # ".fm", MPEMovFM, FPR32, MR>;
+  def ZF : MPEInstMov<opcodestr # ".zf", MPEMovZF, MR,    FPR32>;
+  def FZ : MPEInstMov<opcodestr # ".fz", MPEMovFZ, FPR32, MR>;
+}
+
+let Predicates = [HasVendorXMPE] in {
+
+let hasSideEffects = 0, mayLoad = 0, mayStore = 0 in {
+  defm MMV_ : MPEInstMov_SFVM<"mmv">;
+} // hasSideEffects = 0, mayLoad = 0, mayStore = 0
+
+def : InstAlias<"mzero $md", (MMV_XM MR:$md, X0)>;
+def : InstAlias<"mz $md", (MMV_XM MR:$md, X0)>;
+
+} // Predicates = [HasVendorXMPE]
+
 //===-- ARITHMETIC INSTRUCTIONS -------------------------------------------===//
 
 class MPEInstAluBase<string opcodestr, string argstr, dag outs, dag ins,
