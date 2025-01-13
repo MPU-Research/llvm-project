@@ -133,6 +133,18 @@ defvar RVM23U32Features = [Feature32Bit,
                            FeatureStdExtZimop,
                            FeatureStdExtZcmop];
 
+// MPE Profile Family
+
+defvar RVMPEFeatures = [Feature64Bit,
+                        FeatureStdExtI,
+                        FeatureStdExtM,
+                        FeatureStdExtA,
+                        FeatureStdExtF,
+                        FeatureStdExtD,
+                        FeatureStdExtC,
+                        FeatureStdExtV,
+                        FeatureVendorXMPE];
+
 //===----------------------------------------------------------------------===//
 // Profile Definitions for ISA String
 //===----------------------------------------------------------------------===//
@@ -159,4 +171,5 @@ def RVA23U64 : RISCVProfile<"rva23u64", RVA23U64Features>;
 def RVA23S64 : RISCVProfile<"rva23s64", RVA23S64Features>;
 def RVB23U64 : RISCVProfile<"rvb23u64", RVB23U64Features>;
 def RVB23S64 : RISCVProfile<"rvb23s64", RVB23S64Features>;
+def RVMPE    : RISCVProfile<"rvmpe",    RVMPEFeatures>;
 def RVM23U32 : RISCVExperimentalProfile<"rvm23u32", RVM23U32Features>;
