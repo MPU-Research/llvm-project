@@ -316,6 +316,18 @@ static DecodeStatus DecodeMRRegisterClass(MCInst &Inst, uint32_t RegNo,
   return MCDisassembler::Success;
 }
 
+static DecodeStatus decodeMMaskReg(MCInst &Inst, uint32_t RegNo,
+                                   uint64_t Address,
+                                   const MCDisassembler *Decoder) {
+  if (RegNo >= 2)
+    return MCDisassembler::Fail;
+
+  MCRegister Reg = (RegNo == 0) ? RISCV::M0 : RISCV::NoRegister;
+
+  Inst.addOperand(MCOperand::createReg(Reg));
+  return MCDisassembler::Success;
+}
+
 template <unsigned N>
 static DecodeStatus decodeUImmOperand(MCInst &Inst, uint32_t Imm,
                                       int64_t Address,

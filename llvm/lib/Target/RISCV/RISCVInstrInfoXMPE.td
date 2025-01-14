@@ -59,6 +59,27 @@ def MPEIntSigned   : MPEDataType<0b01>;
 def MPEFloat       : MPEDataType<0b10>;
 
 //===----------------------------------------------------------------------===//
+// Mask Operands
+//===----------------------------------------------------------------------===//
+
+def MMaskAsmOperand : AsmOperandClass {
+  let Name = "RVMPEMaskRegOpOperand";
+  let RenderMethod = "addRegOperands";
+  let PredicateMethod = "isM0Reg";
+  let ParserMethod = "parseMaskReg";
+  let IsOptional = 1;
+  let DefaultMethod = "defaultMaskRegOp";
+  let DiagnosticType = "InvalidMPEMaskRegister";
+}
+
+def MMaskOp : RegisterOperand<MMM0> {
+  let ParserMatchClass = MMaskAsmOperand;
+  let PrintMethod = "printMMaskReg";
+  let EncoderMethod = "getMMaskReg";
+  let DecoderMethod = "decodeMMaskReg";
+}
+
+//===----------------------------------------------------------------------===//
 // Instruction formats
 //===----------------------------------------------------------------------===//
 

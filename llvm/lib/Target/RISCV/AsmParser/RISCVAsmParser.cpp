@@ -456,6 +456,9 @@ public:
   bool isV0Reg() const {
     return Kind == KindTy::Register && Reg.RegNum == RISCV::V0;
   }
+  bool isM0Reg() const {
+    return Kind == KindTy::Register && Reg.RegNum == RISCV::M0;
+  }
   bool isAnyReg() const {
     return Kind == KindTy::Register &&
            (RISCVMCRegisterClasses[RISCV::GPRRegClassID].contains(Reg.RegNum) ||
@@ -1668,6 +1671,10 @@ bool RISCVAsmParser::matchAndEmitInstruction(SMLoc IDLoc, unsigned &Opcode,
     SMLoc ErrorLoc = ((RISCVOperand &)*Operands[ErrorInfo]).getStartLoc();
     return Error(ErrorLoc, "operand must be v0.t");
   }
+  case Match_InvalidMPEMaskRegister: {
+    SMLoc ErrorLoc = ((RISCVOperand &)*Operands[ErrorInfo]).getStartLoc();
+    return Error(ErrorLoc, "operand must be m0.t");
+  }
   case Match_InvalidSImm5Plus1: {
     return generateImmOutOfRangeError(Operands, ErrorInfo, -(1 << 4) + 1,
                                       (1 << 4),
@@ -2370,7 +2377,7 @@ ParseStatus RISCVAsmParser::parseMaskReg(OperandVector &Operands) {
 
   if (!Reg)
     return ParseStatus::NoMatch;
-  if (Reg != RISCV::V0)
+  if (Reg != RISCV::V0 && Reg != RISCV::M0)
     return ParseStatus::NoMatch;
   SMLoc S = getLoc();
   SMLoc E = SMLoc::getFromPointer(S.getPointer() + Name.size());
