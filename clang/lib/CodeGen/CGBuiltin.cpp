@@ -23298,6 +23298,12 @@ Value *CodeGenFunction::EmitRISCVBuiltinExpr(unsigned BuiltinID,
   case RISCV::BI__builtin_riscv_cv_alu_subuRN:
     ID = Intrinsic::riscv_cv_alu_subuRN;
     break;
+  case RISCV::BI__builtin_riscv_mpe_load:
+    ID = Intrinsic::riscv_mpe_load;
+    break;
+  case RISCV::BI__builtin_riscv_mpe_store:
+    ID = Intrinsic::riscv_mpe_store;
+    break;
 
     // Vector builtins are handled from here.
 #include "clang/Basic/riscv_vector_builtin_cg.inc"
