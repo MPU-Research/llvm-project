@@ -90,9 +90,10 @@ class MPEInstMemBase<string opcodestr, string argstr, MPEMemOp mmop, dag outs,
     : MPEInstBase<MPEMinorOpMem, outs, ins, opcodestr, argstr> {
   bits<5> md;
   bits<5> rs1;
+  bit mrm;
 
   let Inst{28-26} = 0;
-  let Inst{25} = 1;
+  let Inst{25} = mrm;
   let Inst{24-20} = 0;
   let Inst{19-15} = rs1;
   let Inst{14-12} = mmop.Value;
@@ -100,9 +101,9 @@ class MPEInstMemBase<string opcodestr, string argstr, MPEMemOp mmop, dag outs,
 }
 
 class MPEInstMem<string opcodestr, MPEMemOp mmop>
-    : MPEInstMemBase<opcodestr, "$md, $rs1", mmop,
+    : MPEInstMemBase<opcodestr, "$md, $rs1$mrm", mmop,
                      (outs MR:$md),
-                     (ins GPRMemZeroOffset:$rs1)>;
+                     (ins GPRMemZeroOffset:$rs1, MMaskOp:$mrm)>;
 
 let Predicates = [HasVendorXMPE] in {
 let hasSideEffects = 0, mayLoad = 1, mayStore = 0 in {
@@ -123,9 +124,10 @@ class MPEInstMovBase<string opcodestr, string argstr, dag outs, dag ins,
     : MPEInstBase<MPEMinorOpMov, outs, ins, opcodestr, argstr> {
   bits<5> rd;
   bits<5> rs1;
+  bit mrm;
 
   let Inst{28-26} = 0;
-  let Inst{25} = 1;
+  let Inst{25} = mrm;
   let Inst{24-20} = mmov.Value;
   let Inst{19-15} = rs1;
   let Inst{14-12} = 0;
@@ -134,9 +136,9 @@ class MPEInstMovBase<string opcodestr, string argstr, dag outs, dag ins,
 
 class MPEInstMov<string opcodestr, MPEMovOp mmov, RegisterClass src,
                  RegisterClass dst>
-    : MPEInstMovBase<opcodestr, "$rd, $rs1",
+    : MPEInstMovBase<opcodestr, "$rd, $rs1$mrm",
                      (outs dst:$rd),
-                     (ins src:$rs1),
+                     (ins src:$rs1, MMaskOp:$mrm),
                      mmov>;
 
 multiclass MPEInstMov_SFVM<string opcodestr> {
@@ -155,8 +157,8 @@ let hasSideEffects = 0, mayLoad = 0, mayStore = 0 in {
   defm MMV_ : MPEInstMov_SFVM<"mmv">;
 } // hasSideEffects = 0, mayLoad = 0, mayStore = 0
 
-def : InstAlias<"mzero $md", (MMV_XM MR:$md, X0)>;
-def : InstAlias<"mz $md", (MMV_XM MR:$md, X0)>;
+def : InstAlias<"mzero $md$mrm", (MMV_XM MR:$md, X0, MMaskOp:$mrm)>;
+def : InstAlias<"mz $md$mrm", (MMV_XM MR:$md, X0, MMaskOp:$mrm)>;
 
 } // Predicates = [HasVendorXMPE]
 
@@ -168,10 +170,11 @@ class MPEInstAluBase<string opcodestr, string argstr, dag outs, dag ins,
   bits<5> md;
   bits<5> ms1;
   bits<5> ms2;
+  bit mrm;
 
   let Inst{28} = 0;
   let Inst{27-26} = dt.Value;
-  let Inst{25} = 1;
+  let Inst{25} = mrm;
   let Inst{24-20} = ms2;
   let Inst{19-15} = ms1;
   let Inst{14-12} = maop.Value;
@@ -179,8 +182,8 @@ class MPEInstAluBase<string opcodestr, string argstr, dag outs, dag ins,
 }
 
 class MPEInstAlu<string opcodestr, MPEAluOp maop, MPEDataType dt>
-    : MPEInstAluBase<opcodestr, "$md, $ms1, $ms2", (outs MR:$md),
-                     (ins MR:$ms1, MR:$ms2), maop, dt>;
+    : MPEInstAluBase<opcodestr, "$md, $ms1, $ms2$mrm", (outs MR:$md),
+                     (ins MR:$ms1, MR:$ms2, MMaskOp:$mrm), maop, dt>;
 
 multiclass MPEInstAlu_SUF<string opcodestr, MPEAluOp maop> {
   def   : MPEInstAlu<opcodestr, maop, MPEIntSigned>;

@@ -8,13 +8,25 @@
 # CHECK-ASM: encoding: [0x77,0x8a,0x03,0x22]
 ml      m20, (x7)
 
+# CHECK-ASM-AND-OBJ: ml m20, (t2), m0.t
+# CHECK-ASM: encoding: [0x77,0x8a,0x03,0x20]
+ml      m20, (x7), m0.t
+
 # CHECK-ASM-AND-OBJ: ms m5, (t0)
 # CHECK-ASM: encoding: [0xf7,0x92,0x02,0x22]
 ms      m5, (x5)
 
+# CHECK-ASM-AND-OBJ: ms m5, (t0), m0.t
+# CHECK-ASM: encoding: [0xf7,0x92,0x02,0x20]
+ms      m5, (x5), m0.t
+
 # CHECK-ASM-AND-OBJ: mmac m1, m2, m3
 # CHECK-ASM: encoding: [0xf7,0x00,0x31,0x66]
 mmac    m1, m2, m3
+
+# CHECK-ASM-AND-OBJ: mmac m1, m2, m3, m0.t
+# CHECK-ASM: encoding: [0xf7,0x00,0x31,0x64]
+mmac   m1, m2, m3, m0.t
 
 # CHECK-ASM-AND-OBJ: mmacu m1, m2, m3
 # CHECK-ASM: encoding: [0xf7,0x00,0x31,0x62]
@@ -28,6 +40,10 @@ mmacf   m1, m2, m3
 # CHECK-ASM: encoding: [0xf7,0x10,0x31,0x66]
 madd    m1, m2, m3
 
+# CHECK-ASM-AND-OBJ: madd m1, m2, m3, m0.t
+# CHECK-ASM: encoding: [0xf7,0x10,0x31,0x64]
+madd    m1, m2, m3, m0.t
+
 # CHECK-ASM-AND-OBJ: maddu m1, m2, m3
 # CHECK-ASM: encoding: [0xf7,0x10,0x31,0x62]
 maddu   m1, m2, m3
@@ -40,6 +56,10 @@ maddf   m1, m2, m3
 # CHECK-ASM: encoding: [0xf7,0x20,0x31,0x66]
 msub    m1, m2, m3
 
+# CHECK-ASM-AND-OBJ: msub m1, m2, m3, m0.t
+# CHECK-ASM: encoding: [0xf7,0x20,0x31,0x64]
+msub    m1, m2, m3, m0.t
+
 # CHECK-ASM-AND-OBJ: msubu m1, m2, m3
 # CHECK-ASM: encoding: [0xf7,0x20,0x31,0x62]
 msubu   m1, m2, m3
@@ -51,6 +71,10 @@ msubf   m1, m2, m3
 # CHECK-ASM-AND-OBJ: mmv.mm m1, m2
 # CHECK-ASM: encoding: [0xf7,0x00,0x01,0x42]
 mmv.mm m1, m2
+
+# CHECK-ASM-AND-OBJ: mmv.mm m1, m2, m0.t
+# CHECK-ASM: encoding: [0xf7,0x00,0x01,0x40]
+mmv.mm m1, m2, m0.t
 
 # CHECK-ASM-AND-OBJ: mmv.xm m1, sp
 # CHECK-ASM: encoding: [0xf7,0x00,0x11,0x42]
@@ -79,6 +103,10 @@ mmv.fz m1, f2
 # CHECK-ASM-AND-OBJ: mmv.xm m1, zero
 # CHECK-ASM: encoding: [0xf7,0x00,0x10,0x42]
 mzero  m1
+
+# CHECK-ASM-AND-OBJ: mmv.xm m1, zero, m0.t
+# CHECK-ASM: encoding: [0xf7,0x00,0x10,0x40]
+mzero  m1, m0.t
 
 # CHECK-ASM-AND-OBJ: mmv.xm m2, zero
 # CHECK-ASM: encoding: [0x77,0x01,0x10,0x42]
