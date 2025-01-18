@@ -1444,6 +1444,9 @@ def ConvertVectorToLLVMPass : Pass<"convert-vector-to-llvm"> {
            "vector::VectorTransformsOptions",
            /*default=*/"vector::VectorTransformsOptions()",
            "Options to lower some operations like contractions and transposes.">,
+    Option<"mpe", "enable-mpe",
+           "bool", /*default=*/"false",
+           "Enables the use of MPE dialect while lowering the vector dialect.">
   ];
 }
 

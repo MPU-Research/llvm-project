@@ -22,6 +22,7 @@
 #include "mlir/Target/LLVMIR/Dialect/GPU/GPUToLLVMIRTranslation.h"
 #include "mlir/Target/LLVMIR/Dialect/LLVMIR/LLVMIRToLLVMTranslation.h"
 #include "mlir/Target/LLVMIR/Dialect/LLVMIR/LLVMToLLVMIRTranslation.h"
+#include "mlir/Target/LLVMIR/Dialect/MPE/MPEToLLVMIRTranslation.h"
 #include "mlir/Target/LLVMIR/Dialect/NVVM/LLVMIRToNVVMTranslation.h"
 #include "mlir/Target/LLVMIR/Dialect/NVVM/NVVMToLLVMIRTranslation.h"
 #include "mlir/Target/LLVMIR/Dialect/OpenACC/OpenACCToLLVMIRTranslation.h"
@@ -44,6 +45,7 @@ static inline void registerAllToLLVMIRTranslations(DialectRegistry &registry) {
   registerBuiltinDialectTranslation(registry);
   registerGPUDialectTranslation(registry);
   registerLLVMDialectTranslation(registry);
+  registerMPEDialectTranslation(registry);
   registerNVVMDialectTranslation(registry);
   registerOpenACCDialectTranslation(registry);
   registerOpenMPDialectTranslation(registry);

@@ -50,6 +50,7 @@
 #include "mlir/Dialect/Linalg/Transforms/RuntimeOpVerification.h"
 #include "mlir/Dialect/MLProgram/IR/MLProgram.h"
 #include "mlir/Dialect/MLProgram/Transforms/BufferizableOpInterfaceImpl.h"
+#include "mlir/Dialect/MPE/MPEDialect.h"
 #include "mlir/Dialect/MPI/IR/MPI.h"
 #include "mlir/Dialect/Math/IR/Math.h"
 #include "mlir/Dialect/MemRef/IR/MemRef.h"
@@ -130,6 +131,7 @@ inline void registerAllDialects(DialectRegistry &registry) {
                   memref::MemRefDialect,
                   mesh::MeshDialect,
                   ml_program::MLProgramDialect,
+                  mpe::MPEDialect,
                   mpi::MPIDialect,
                   nvgpu::NVGPUDialect,
                   NVVM::NVVMDialect,

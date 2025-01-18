@@ -39,6 +39,8 @@ add_mlir_conversion_library(MLIRVectorToLLVMPass
   MLIRArmSVETransforms
   MLIRAMXDialect
   MLIRAMXTransforms
+  MLIRMPEDialect
+  MLIRMPETransforms
   MLIRX86VectorDialect
   MLIRX86VectorTransforms
 )

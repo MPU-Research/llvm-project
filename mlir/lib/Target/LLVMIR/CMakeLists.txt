@@ -54,6 +54,7 @@ add_mlir_translation_library(MLIRToLLVMIRTranslationRegistration
   MLIRGPUToLLVMIRTranslation
   MLIRX86VectorToLLVMIRTranslation
   MLIRLLVMToLLVMIRTranslation
+  MLIRMPEToLLVMIRTranslation
   MLIRNVVMToLLVMIRTranslation
   MLIROpenACCToLLVMIRTranslation
   MLIROpenMPToLLVMIRTranslation
