@@ -1,0 +1,49 @@
+image: 10.10.73.51:5000/riscv-gcc-toolchain
+
+definitions:
+  steps:
+    - step: &build-step
+        name: Build
+        runs-on:
+          - self.hosted
+          - linux
+        size: 8x
+        script:
+          - BRANCH=${BITBUCKET_BRANCH//["/""."]/_}
+          - BUILD_ID=${BRANCH}-${BITBUCKET_COMMIT:0-8}
+          - PACKAGE_FILE="llvm-teiu-build_${BUILD_ID}.tar.xz"
+          - CURL_HEADER="Authorization:Bearer ${REPO_DOWNLOADS_TOKEN}"
+
+          # prepare for build
+          - apt update
+          - apt install -y autoconf automake autotools-dev bc bison build-essential cmake curl flex gawk git gperf libexpat-dev libglib2.0-dev libgmp-dev libgoogle-perftools-dev libmpc-dev libmpfr-dev libprotobuf-dev libprotoc-dev libslirp-dev libtool m4 ninja-build patchutils protobuf-compiler pre-commit mypy python-is-python3 python3 python3-dev python3-pip python3-venv scons texinfo zlib1g zlib1g-dev 
+          - rm -rf artifacts
+
+          # build
+          - cmake -S llvm -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_PROJECTS="mlir;clang;lld" -DLLVM_TARGETS_TO_BUILD="RISCV"
+          - ninja -C build
+          - cd build
+          - cmake --install . --prefix ${BITBUCKET_CLONE_DIR}/llvm_teiu
+
+          # compress artifacts
+          - cd ${BITBUCKET_CLONE_DIR}
+          - mkdir artifacts
+          - XZ_OPT='-T0' tar Jcf artifacts/${PACKAGE_FILE} llvm_teiu
+          - cd artifacts
+          - ls -lah
+          - sha256sum ${PACKAGE_FILE} > ${PACKAGE_FILE}.sha256
+
+          # upload to local SFTP
+          - pipe: atlassian/sftp-deploy:0.10.0
+            variables:
+              USER: 'bitbucket-user'
+              SERVER: '10.10.73.51'
+              REMOTE_PATH: 'data/llvm-builds'
+              LOCAL_PATH: '${PACKAGE_FILE}*'
+              EXTRA_ARGS: '-o StrictHostKeyChecking=no'
+              DEBUG: 'true'
+clone:
+  depth: 1
+pipelines:  
+  default:
+    - step: *build-step
