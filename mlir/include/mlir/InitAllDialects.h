@@ -63,6 +63,7 @@
 #include "mlir/Dialect/NVGPU/IR/NVGPUDialect.h"
 #include "mlir/Dialect/OpenACC/OpenACC.h"
 #include "mlir/Dialect/OpenMP/OpenMPDialect.h"
+#include "mlir/Dialect/PowerMMA/MMADialect.h"
 #include "mlir/Dialect/PDL/IR/PDL.h"
 #include "mlir/Dialect/PDLInterp/IR/PDLInterp.h"
 #include "mlir/Dialect/Polynomial/IR/PolynomialDialect.h"
@@ -132,6 +133,7 @@ inline void registerAllDialects(DialectRegistry &registry) {
                   mesh::MeshDialect,
                   ml_program::MLProgramDialect,
                   mpe::MPEDialect,
+                  mma::MMADialect,
                   mpi::MPIDialect,
                   nvgpu::NVGPUDialect,
                   NVVM::NVVMDialect,

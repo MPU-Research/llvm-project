@@ -21,6 +21,8 @@
 #include "mlir/Dialect/MemRef/IR/MemRef.h"
 #include "mlir/Dialect/MPE/MPEDialect.h"
 #include "mlir/Dialect/MPE/Transforms.h"
+#include "mlir/Dialect/PowerMMA/MMADialect.h"
+#include "mlir/Dialect/PowerMMA/Transforms.h"
 #include "mlir/Dialect/Tensor/IR/Tensor.h"
 #include "mlir/Dialect/Vector/Transforms/LoweringPatterns.h"
 #include "mlir/Dialect/Vector/Transforms/VectorRewritePatterns.h"
@@ -59,6 +61,8 @@ struct ConvertVectorToLLVMPass
       registry.insert<x86vector::X86VectorDialect>();
     if (mpe)
       registry.insert<mpe::MPEDialect>();
+    if (mma)
+      registry.insert<mma::MMADialect>();
   }
   void runOnOperation() override;
 };
@@ -125,6 +129,10 @@ void ConvertVectorToLLVMPass::runOnOperation() {
   if (mpe) {
     configureMPELegalizeForLLVMExportTarget(target);
     populateMPELegalizeForLLVMExportPatterns(converter, patterns);
+  }
+  if (mma) {
+    configureMMALegalizeForExportTarget(target);
+    populateMMALegalizeForLLVMExportPatterns(converter, patterns);
   }
 
   if (failed(
