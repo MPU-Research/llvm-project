@@ -25,6 +25,16 @@ definitions:
           - cd build
           - cmake --install . --prefix ${BITBUCKET_CLONE_DIR}/llvm_teiu
 
+          # create manifest file
+          - MAN="${BITBUCKET_CLONE_DIR}/llvm_teiu/MANIFEST"
+          - echo "Repository  -> $BITBUCKET_REPO_FULL_NAME" >> $MAN
+          - echo "Commit      -> $BITBUCKET_COMMIT" >> $MAN
+          - echo "Branch      -> $BITBUCKET_BRANCH" >> $MAN
+          - echo "Tag         -> $BITBUCKET_TAG" >> $MAN
+          - echo "PR          -> $BITBUCKET_PR_ID" >> $MAN
+          - echo "Pipeline    -> $BITBUCKET_PIPELINE_UUID" >> $MAN
+          - echo "Build Number -> $BITBUCKET_BUILD_NUMBER" >> $MAN
+
           # compress artifacts
           - cd ${BITBUCKET_CLONE_DIR}
           - mkdir artifacts
