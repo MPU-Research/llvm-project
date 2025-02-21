@@ -63,13 +63,13 @@ let Predicates = [HasVendorXMPE] in {
 
 class MPEInstMSU<string opcodestr>
     : MPEBaseInstMSU<opcodestr, "$md, $rs1$mrm",
-                     (outs GPRMemZeroOffset:$rs1),
-                     (ins MR:$md, MMaskOp:$mrm)>;
+                     (outs),
+                     (ins MR:$md, GPRMemZeroOffset:$rs1, MMaskOp:$mrm)>;
 
 class MPEInstMSS<string opcodestr, MPEMemOp mmop>
     : MPEBaseInstMSS<opcodestr, "$md, $rs1, $rs2$mrm", mmop,
-                     (outs GPRMemZeroOffset:$rs1),
-                     (ins MR:$md, GPR:$rs2, MMaskOp:$mrm)>;
+                     (outs),
+                     (ins MR:$md, GPRMemZeroOffset:$rs1, GPR:$rs2, MMaskOp:$mrm)>;
 
 multiclass MPEInstStore<string opcodestr> {
   def U  : MPEInstMSU<opcodestr>;
