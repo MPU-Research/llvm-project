@@ -122,6 +122,10 @@ static const MCPhysReg ArgVRN4M2s[] = {
     RISCV::V16M2_V18M2_V20M2_V22M2};
 static const MCPhysReg ArgVRN2M4s[] = {RISCV::V8M4_V12M4, RISCV::V12M4_V16M4,
                                        RISCV::V16M4_V20M4};
+static const MCPhysReg ArgMRs[] = {
+    RISCV::M8,  RISCV::M9,  RISCV::M10, RISCV::M11, RISCV::M12, RISCV::M13,
+    RISCV::M14, RISCV::M15, RISCV::M16, RISCV::M17, RISCV::M18, RISCV::M19,
+    RISCV::M20, RISCV::M21, RISCV::M22, RISCV::M23};
 
 ArrayRef<MCPhysReg> RISCV::getArgGPRs(const RISCVABI::ABI ABI) {
   // The GPRs used for passing arguments in the ILP32* and LP64* ABIs, except
@@ -530,7 +534,11 @@ bool llvm::CC_RISCV(unsigned ValNo, MVT ValVT, MVT LocVT,
   unsigned StoreSizeBytes = XLen / 8;
   Align StackAlign = Align(XLen / 8);
 
-  if (ValVT.isVector() || ValVT.isRISCVVectorTuple()) {
+  auto *RC = TLI.getRegClassFor(ValVT);
+
+  if (ValVT.isVector() && RC == &RISCV::MRRegClass) {
+    Reg = State.AllocateReg(ArgMRs);
+  } else if (ValVT.isVector() || ValVT.isRISCVVectorTuple()) {
     Reg = allocateRVVReg(ValVT, ValNo, State, TLI);
     if (Reg) {
       // Fixed-length vectors are located in the corresponding scalable-vector
@@ -589,7 +597,8 @@ bool llvm::CC_RISCV(unsigned ValNo, MVT ValVT, MVT LocVT,
 
   assert(((ValVT.isFloatingPoint() && !ValVT.isVector()) || LocVT == XLenVT ||
           (TLI.getSubtarget().hasVInstructions() &&
-           (ValVT.isVector() || ValVT.isRISCVVectorTuple()))) &&
+           (ValVT.isVector() || ValVT.isRISCVVectorTuple())) ||
+          (TLI.getSubtarget().hasMPEInstructions() && ValVT.isVector())) &&
          "Expected an XLenVT or vector types at this stage");
 
   if (Reg) {

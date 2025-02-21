@@ -523,6 +523,273 @@ void RISCVDAGToDAGISel::selectVSETVLI(SDNode *Node) {
               CurDAG->getMachineNode(Opcode, DL, XLenVT, VLOperand, VTypeIOp));
 }
 
+void RISCVDAGToDAGISel::selectMPEArith(SDNode *Node, bool IsMasked = false) {
+  if (!Subtarget->hasMPEInstructions())
+    return;
+
+  assert(Node->getOpcode() == ISD::INTRINSIC_WO_CHAIN && "Unexpected opcode");
+
+  SDLoc DL(Node);
+  unsigned Opcode = 0;
+
+  switch (Node->getConstantOperandVal(0)) {
+  default:
+    assert(false && "Intrinsic is not part of the MPE extension.");
+  case Intrinsic::riscv_mpe_add_i32:
+  case Intrinsic::riscv_mpe_add_i32_mask:
+    Opcode = RISCV::MADD;
+    break;
+  case Intrinsic::riscv_mpe_add_f32:
+  case Intrinsic::riscv_mpe_add_f32_mask:
+    Opcode = RISCV::MADDF;
+    break;
+  case Intrinsic::riscv_mpe_sub_i32:
+  case Intrinsic::riscv_mpe_sub_i32_mask:
+    Opcode = RISCV::MSUB;
+    break;
+  case Intrinsic::riscv_mpe_sub_f32:
+  case Intrinsic::riscv_mpe_sub_f32_mask:
+    Opcode = RISCV::MSUBF;
+    break;
+  case Intrinsic::riscv_mpe_mac_i32:
+  case Intrinsic::riscv_mpe_mac_i32_mask:
+    Opcode = RISCV::MMAC;
+    break;
+  case Intrinsic::riscv_mpe_mac_f32:
+  case Intrinsic::riscv_mpe_mac_f32_mask:
+    Opcode = RISCV::MMACF;
+    break;
+  }
+
+  SmallVector<SDValue> Operands;
+
+  EVT VT = Node->getValueType(0);
+  SDValue Chain = Node->getOperand(0);
+  SDValue LHS = Node->getOperand(1);
+  SDValue RHS = Node->getOperand(2);
+  SDValue MaskOp;
+  SDValue Glue;
+
+  Operands.push_back(LHS);
+  Operands.push_back(RHS);
+
+  assert((LHS.getValueType() == RHS.getValueType()) &&
+         "LHS and RHS must have the same MVT!");
+
+  if (!IsMasked) {
+    MaskOp = CurDAG->getRegister(RISCV::NoRegister, MVT::v16i1);
+  } else {
+    SDValue Mask = Node->getOperand(3);
+    Chain = CurDAG->getCopyToReg(Chain, DL, RISCV::M0, Mask, SDValue());
+    Glue = Chain.getValue(1);
+    MaskOp = CurDAG->getRegister(RISCV::M0, Mask.getValueType());
+  }
+
+  Operands.push_back(MaskOp);
+  if (Glue)
+    Operands.push_back(Glue);
+  // Operands.push_back(Chain);
+
+  ReplaceNode(Node, CurDAG->getMachineNode(Opcode, DL, VT, Operands));
+}
+
+void RISCVDAGToDAGISel::selectMPELoad(SDNode *Node, unsigned IntNo, bool IsMasked = false) {
+  if (!Subtarget->hasMPEInstructions())
+    return;
+
+  assert(Node->getOpcode() == ISD::INTRINSIC_W_CHAIN && "Unexpected opcode");
+
+  SDLoc DL(Node);
+  unsigned Opcode = 0;
+  bool IsStrided = 0;
+
+  switch (IntNo) {
+  default:
+    assert(false && "Expected MPE load intrinsic.");
+  case Intrinsic::riscv_mpe_load_us:
+  case Intrinsic::riscv_mpe_load_us_mask:
+    Opcode = RISCV::MLU;
+    break;
+  case Intrinsic::riscv_mpe_load_ss:
+  case Intrinsic::riscv_mpe_load_ss_mask:
+    Opcode = RISCV::MLSS;
+    IsStrided = 1;
+    break;
+  case Intrinsic::riscv_mpe_load_s:
+  case Intrinsic::riscv_mpe_load_s_mask:
+    Opcode = RISCV::MLS;
+    IsStrided = 1;
+    break;
+  }
+
+  SmallVector<SDValue> Operands;
+
+  EVT VT = Node->getValueType(0);
+  SDValue Chain = Node->getOperand(0);
+  SDValue Ptr = Node->getOperand(2);
+  SDValue MaskOp;
+  SDValue Glue;
+
+  Operands.push_back(Ptr);
+
+  if (IsStrided) {
+    SDValue Stride = Node->getOperand(3);
+    Operands.push_back(Stride);
+  }
+
+  if (!IsMasked) {
+    MaskOp = CurDAG->getRegister(RISCV::NoRegister, MVT::v16i1);
+  } else {
+    SDValue Mask = Node->getOperand((IsStrided) ? 4 : 3);
+    Chain = CurDAG->getCopyToReg(Chain, DL, RISCV::M0, Mask, SDValue());
+    Glue = Chain.getValue(1);
+    MaskOp = CurDAG->getRegister(RISCV::M0, Mask.getValueType());
+  }
+
+  Operands.push_back(MaskOp);
+  if (Glue)
+    Operands.push_back(Glue);
+  Operands.push_back(Chain);
+
+  auto *MachineNode = CurDAG->getMachineNode(
+      Opcode, DL, {VT, Chain->getValueType(0)}, Operands);
+
+  ReplaceNode(Node, MachineNode);
+}
+
+void RISCVDAGToDAGISel::selectMPEStore(SDNode *Node, unsigned IntNo, bool IsMasked = false) {
+  if (!Subtarget->hasMPEInstructions())
+    return;
+
+  assert(Node->getOpcode() == ISD::INTRINSIC_VOID && "Unexpected opcode");
+
+  SDLoc DL(Node);
+  unsigned Opcode = 0;
+  bool IsStrided = 0;
+
+  switch (IntNo) {
+  default:
+    assert(false && "Expected MPE load intrinsic.");
+  case Intrinsic::riscv_mpe_store_us:
+  case Intrinsic::riscv_mpe_store_us_mask:
+    Opcode = RISCV::MSU;
+    break;
+  case Intrinsic::riscv_mpe_store_ss:
+  case Intrinsic::riscv_mpe_store_ss_mask:
+    Opcode = RISCV::MSSS;
+    IsStrided = 1;
+    break;
+  case Intrinsic::riscv_mpe_store_s:
+  case Intrinsic::riscv_mpe_store_s_mask:
+    Opcode = RISCV::MSS;
+    IsStrided = 1;
+    break;
+  }
+
+  SmallVector<SDValue> Operands;
+
+  EVT VT = Node->getValueType(0);
+  SDValue Chain = Node->getOperand(0);
+  SDValue SourceReg = Node->getOperand(2);
+  SDValue Pointer = Node->getOperand(3);
+  SDValue MaskOp;
+  SDValue Glue;
+
+  Operands.push_back(SourceReg);
+  Operands.push_back(Pointer);
+
+  if (IsStrided) {
+    SDValue Stride = Node->getOperand(4);
+    Operands.push_back(Stride);
+  }
+
+  if (!IsMasked) {
+    MaskOp = CurDAG->getRegister(RISCV::NoRegister, MVT::v16i1);
+  } else {
+    SDValue Mask = Node->getOperand((IsStrided) ? 5 : 4);
+    Chain = CurDAG->getCopyToReg(Chain, DL, RISCV::M0, Mask, SDValue());
+    Glue = Chain.getValue(1);
+    MaskOp = CurDAG->getRegister(RISCV::M0, Mask.getValueType());
+  }
+
+  Operands.push_back(MaskOp);
+  Operands.push_back(Chain);
+
+  auto *MachineNode = CurDAG->getMachineNode(
+      Opcode, DL, VT, Operands);
+
+  ReplaceNode(Node, MachineNode);
+}
+
+void RISCVDAGToDAGISel::selectMPEMove(SDNode *Node, bool IsMasked = false) {
+  if (!Subtarget->hasMPEInstructions())
+    return;
+
+  assert(Node->getOpcode() == ISD::INTRINSIC_WO_CHAIN && "Unexpected opcode");
+
+  SDLoc DL(Node);
+  unsigned Opcode = 0;
+
+  switch (Node->getConstantOperandVal(0)) {
+  default:
+    assert(false && "Expected MPE move intrinsic.");
+  case Intrinsic::riscv_mpe_move_mm:
+  case Intrinsic::riscv_mpe_move_mm_mask:
+    Opcode = RISCV::MMV_MM;
+    break;
+  case Intrinsic::riscv_mpe_move_xm:
+  case Intrinsic::riscv_mpe_move_xm_mask:
+    Opcode = RISCV::MMV_XM;
+    break;
+  case Intrinsic::riscv_mpe_move_zx:
+  case Intrinsic::riscv_mpe_move_zx_mask:
+    Opcode = RISCV::MMV_ZX;
+    break;
+  case Intrinsic::riscv_mpe_move_zm:
+  case Intrinsic::riscv_mpe_move_zm_mask:
+    Opcode = RISCV::MMV_ZM;
+    break;
+  case Intrinsic::riscv_mpe_move_fm:
+  case Intrinsic::riscv_mpe_move_fm_mask:
+    Opcode = RISCV::MMV_FM;
+    break;
+  case Intrinsic::riscv_mpe_move_zf:
+  case Intrinsic::riscv_mpe_move_zf_mask:
+    Opcode = RISCV::MMV_ZF;
+    break;
+  case Intrinsic::riscv_mpe_move_fz:
+  case Intrinsic::riscv_mpe_move_fz_mask:
+    Opcode = RISCV::MMV_FZ;
+    break;
+  }
+
+  SmallVector<SDValue> Operands;
+
+  EVT VT = Node->getValueType(0);
+  SDValue Chain = Node->getOperand(0);
+  SDValue Source = Node->getOperand(1);
+  SDValue MaskOp;
+  SDValue Glue;
+
+  Operands.push_back(Source);
+
+  if (!IsMasked) {
+    MaskOp = CurDAG->getRegister(RISCV::NoRegister, MVT::v16i1);
+  } else {
+    SDValue Mask = Node->getOperand(2);
+    Chain = CurDAG->getCopyToReg(Chain, DL, RISCV::M0, Mask, SDValue());
+    Glue = Chain.getValue(1);
+    MaskOp = CurDAG->getRegister(RISCV::M0, Mask.getValueType());
+  }
+
+  Operands.push_back(MaskOp);
+  if (Glue)
+    Operands.push_back(Glue);
+  // Operands.push_back(Chain);
+
+  ReplaceNode(Node, CurDAG->getMachineNode(Opcode, DL, VT, Operands));
+}
+
 bool RISCVDAGToDAGISel::tryShrinkShlLogicImm(SDNode *Node) {
   MVT VT = Node->getSimpleValueType(0);
   unsigned Opcode = Node->getOpcode();
@@ -1864,6 +2131,36 @@ void RISCVDAGToDAGISel::Select(SDNode *Node) {
     case Intrinsic::riscv_vsetvli:
     case Intrinsic::riscv_vsetvlimax:
       return selectVSETVLI(Node);
+    case Intrinsic::riscv_mpe_add_i32:
+    case Intrinsic::riscv_mpe_add_f32:
+    case Intrinsic::riscv_mpe_sub_i32:
+    case Intrinsic::riscv_mpe_sub_f32:
+    case Intrinsic::riscv_mpe_mac_i32:
+    case Intrinsic::riscv_mpe_mac_f32:
+      return selectMPEArith(Node, /*IsMasked=*/false);
+    case Intrinsic::riscv_mpe_add_i32_mask:
+    case Intrinsic::riscv_mpe_add_f32_mask:
+    case Intrinsic::riscv_mpe_sub_i32_mask:
+    case Intrinsic::riscv_mpe_sub_f32_mask:
+    case Intrinsic::riscv_mpe_mac_i32_mask:
+    case Intrinsic::riscv_mpe_mac_f32_mask:
+      return selectMPEArith(Node, /*IsMasked=*/true);
+    case Intrinsic::riscv_mpe_move_mm:
+    case Intrinsic::riscv_mpe_move_xm:
+    case Intrinsic::riscv_mpe_move_zx:
+    case Intrinsic::riscv_mpe_move_zm:
+    case Intrinsic::riscv_mpe_move_fm:
+    case Intrinsic::riscv_mpe_move_zf:
+    case Intrinsic::riscv_mpe_move_fz:
+      return selectMPEMove(Node, /*IsMasked=*/false);
+    case Intrinsic::riscv_mpe_move_mm_mask:
+    case Intrinsic::riscv_mpe_move_xm_mask:
+    case Intrinsic::riscv_mpe_move_zx_mask:
+    case Intrinsic::riscv_mpe_move_zm_mask:
+    case Intrinsic::riscv_mpe_move_fm_mask:
+    case Intrinsic::riscv_mpe_move_zf_mask:
+    case Intrinsic::riscv_mpe_move_fz_mask:
+      return selectMPEMove(Node, /*IsMasked=*/true);
     }
     break;
   }
@@ -2093,6 +2390,14 @@ void RISCVDAGToDAGISel::Select(SDNode *Node) {
       ReplaceNode(Node, Load);
       return;
     }
+    case Intrinsic::riscv_mpe_load_us:
+    case Intrinsic::riscv_mpe_load_ss:
+    case Intrinsic::riscv_mpe_load_s:
+      return selectMPELoad(Node, IntNo, /*IsMasked=*/false);
+    case Intrinsic::riscv_mpe_load_us_mask:
+    case Intrinsic::riscv_mpe_load_ss_mask:
+    case Intrinsic::riscv_mpe_load_s_mask:
+      return selectMPELoad(Node, IntNo, /*IsMasked=*/true);
     }
     break;
   }
@@ -2261,6 +2566,14 @@ void RISCVDAGToDAGISel::Select(SDNode *Node) {
     case Intrinsic::riscv_sf_vc_i_se:
       selectSF_VC_X_SE(Node);
       return;
+    case Intrinsic::riscv_mpe_store_us:
+    case Intrinsic::riscv_mpe_store_ss:
+    case Intrinsic::riscv_mpe_store_s:
+      return selectMPEStore(Node, IntNo, /*IsMasked=*/false);
+    case Intrinsic::riscv_mpe_store_us_mask:
+    case Intrinsic::riscv_mpe_store_ss_mask:
+    case Intrinsic::riscv_mpe_store_s_mask:
+      return selectMPEStore(Node, IntNo, /*IsMasked=*/true);
     }
     break;
   }

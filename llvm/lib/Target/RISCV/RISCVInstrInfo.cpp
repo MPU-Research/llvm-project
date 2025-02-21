@@ -563,6 +563,38 @@ void RISCVInstrInfo::copyPhysReg(MachineBasicBlock &MBB,
     return;
   }
 
+  // MR->MR copies.
+  if (RISCV::MRRegClass.contains(DstReg, SrcReg)) {
+  BuildMI(MBB, MBBI, DL, get(RISCV::MMV_MM), DstReg)
+      .addReg(SrcReg, getKillRegState(KillSrc))
+      .addReg(RISCV::NoRegister);
+    return;
+  }
+
+  // GPR->MR copies.
+  if (RISCV::MRRegClass.contains(DstReg) &&
+      RISCV::GPRRegClass.contains(SrcReg)) {
+    BuildMI(MBB, MBBI, DL, get(RISCV::MMV_XM), DstReg)
+        .addReg(SrcReg, getKillRegState(KillSrc))
+        .addReg(RISCV::NoRegister);
+    return;
+  }
+
+  // MR->GPR copies.
+  if (RISCV::GPRRegClass.contains(DstReg) &&
+      RISCV::MRRegClass.contains(SrcReg)) {
+    BuildMI(MBB, MBBI, DL, get(RISCV::MMV_ZX), DstReg)
+        .addReg(SrcReg, getKillRegState(KillSrc))
+        .addReg(RISCV::NoRegister);
+    return;
+  }
+
+  // MR->? and ?->MR are not allowed.
+  if (RISCV::MRRegClass.contains(SrcReg) ^
+      RISCV::MRRegClass.contains(DstReg)) {
+    llvm_unreachable("Invalid copy between MR and unknown register class");
+  }
+
   // VR->VR copies.
   const TargetRegisterClass *RegClass =
       TRI->getCommonMinimalPhysRegClass(SrcReg, DstReg);

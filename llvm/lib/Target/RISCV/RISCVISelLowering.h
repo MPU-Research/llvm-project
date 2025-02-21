@@ -852,6 +852,10 @@ public:
 
   bool isLegalElementTypeForRVV(EVT ScalarTy) const;
 
+  bool shouldLowerLoadToMPEIntrinsic(SDNode *Op) const;
+  bool shouldLowerStoreToMPEIntrinsic(SDNode *Op) const;
+  bool isLegalVectorForMPE(EVT Ty) const;
+
   bool shouldConvertFpToSat(unsigned Op, EVT FPVT, EVT VT) const override;
 
   unsigned getJumpTableEncoding() const override;
@@ -994,6 +998,8 @@ private:
   SDValue lowerFixedLengthVectorSetccToRVV(SDValue Op, SelectionDAG &DAG) const;
   SDValue lowerFixedLengthVectorSelectToRVV(SDValue Op,
                                             SelectionDAG &DAG) const;
+  SDValue lowerVectorLoadToMPEIntrinsic(SDValue Op, SelectionDAG &DAG) const;
+  SDValue lowerVectorStoreToMPEIntrinsic(SDValue Op, SelectionDAG &DAG) const;
   SDValue lowerToScalableOp(SDValue Op, SelectionDAG &DAG) const;
   SDValue LowerIS_FPCLASS(SDValue Op, SelectionDAG &DAG) const;
   SDValue lowerVPOp(SDValue Op, SelectionDAG &DAG) const;
