@@ -2391,6 +2391,9 @@ public:
   /// Returns true for RVV scalable vector types.
   bool isRVVSizelessBuiltinType() const;
 
+  /// Returns true for MPE builtin types.
+  bool isMPEBuiltinType() const;
+
   /// Check if this is a WebAssembly Externref Type.
   bool isWebAssemblyExternrefType() const;
 

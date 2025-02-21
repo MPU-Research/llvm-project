@@ -9332,6 +9332,15 @@ Sema::CheckAssignmentConstraints(QualType LHSType, ExprResult &RHS,
       }
     }
 
+    // Allow assignments between fixed-length vectors and MPE types
+    if ((LHSType->isVectorType() && RHSType->isMPEBuiltinType()) ||
+        (LHSType->isMPEBuiltinType() && RHSType->isVectorType())) {
+      if (Context.areCompatibleMPETypes(LHSType, RHSType)) {
+        Kind = CK_BitCast;
+        return Compatible;
+      }
+    }
+
     return Incompatible;
   }
 

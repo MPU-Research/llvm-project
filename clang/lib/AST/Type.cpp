@@ -2549,6 +2549,19 @@ bool Type::isRVVSizelessBuiltinType() const {
   return false;
 }
 
+bool Type::isMPEBuiltinType() const {
+  if (const BuiltinType *BT = getAs<BuiltinType>()) {
+    switch (BT->getKind()) {
+#define RVMPE_TYPE(Name, Id, SingletonId) case BuiltinType::Id:
+#include "clang/Basic/RISCVXMPETypes.def"
+      return true;
+    default:
+      return false;
+    }
+  }
+  return false;
+}
+
 bool Type::isSveVLSBuiltinType() const {
   if (const BuiltinType *BT = getAs<BuiltinType>()) {
     switch (BT->getKind()) {

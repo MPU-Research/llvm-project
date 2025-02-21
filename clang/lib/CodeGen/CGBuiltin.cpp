@@ -23462,6 +23462,42 @@ Value *CodeGenFunction::EmitRISCVBuiltinExpr(unsigned BuiltinID,
   case RISCV::BI__builtin_riscv_cv_alu_subuRN:
     ID = Intrinsic::riscv_cv_alu_subuRN;
     break;
+  case RISCV::BI__builtin_riscv_mpe_add_i32:
+    ID = Intrinsic::riscv_mpe_add_i32;
+    break;
+  case RISCV::BI__builtin_riscv_mpe_add_i32_mask:
+    ID = Intrinsic::riscv_mpe_add_i32_mask;
+    break;
+  case RISCV::BI__builtin_riscv_mpe_add_f32:
+    ID = Intrinsic::riscv_mpe_add_f32;
+    break;
+  case RISCV::BI__builtin_riscv_mpe_add_f32_mask:
+    ID = Intrinsic::riscv_mpe_add_f32_mask;
+    break;
+  case RISCV::BI__builtin_riscv_mpe_sub_i32:
+    ID = Intrinsic::riscv_mpe_sub_i32;
+    break;
+  case RISCV::BI__builtin_riscv_mpe_sub_i32_mask:
+    ID = Intrinsic::riscv_mpe_sub_i32_mask;
+    break;
+  case RISCV::BI__builtin_riscv_mpe_sub_f32:
+    ID = Intrinsic::riscv_mpe_sub_f32;
+    break;
+  case RISCV::BI__builtin_riscv_mpe_sub_f32_mask:
+    ID = Intrinsic::riscv_mpe_sub_f32_mask;
+    break;
+  case RISCV::BI__builtin_riscv_mpe_mac_i32:
+    ID = Intrinsic::riscv_mpe_mac_i32;
+    break;
+  case RISCV::BI__builtin_riscv_mpe_mac_i32_mask:
+    ID = Intrinsic::riscv_mpe_mac_i32_mask;
+    break;
+  case RISCV::BI__builtin_riscv_mpe_mac_f32:
+    ID = Intrinsic::riscv_mpe_mac_f32;
+    break;
+  case RISCV::BI__builtin_riscv_mpe_mac_f32_mask:
+    ID = Intrinsic::riscv_mpe_mac_f32_mask;
+    break;
 
     // Vector builtins are handled from here.
 #include "clang/Basic/riscv_vector_builtin_cg.inc"

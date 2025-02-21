@@ -2462,6 +2462,10 @@ public:
   /// incompatible element types, false otherwise.
   bool areLaxCompatibleRVVTypes(QualType FirstType, QualType SecondType);
 
+  /// Return true if the given types are an RISC-V MPE builtin type and a
+  /// VectorType that has length compatible with RISC-V matrix type.
+  bool areCompatibleMPETypes(QualType FirstType, QualType SecondType);
+
   /// Return true if the type has been explicitly qualified with ObjC ownership.
   /// A type may be implicitly qualified with ownership under ObjC ARC, and in
   /// some cases the compiler treats these differently.

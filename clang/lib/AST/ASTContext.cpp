@@ -10504,6 +10504,30 @@ bool ASTContext::areLaxCompatibleRVVTypes(QualType FirstType,
          IsLaxCompatible(SecondType, FirstType);
 }
 
+bool ASTContext::areCompatibleMPETypes(QualType FirstType,
+                                       QualType SecondType) {
+  assert(((FirstType->isMPEBuiltinType() && SecondType->isVectorType()) ||
+          (FirstType->isVectorType() && SecondType->isMPEBuiltinType())) &&
+         "Expected MPE builtin type and vector type!");
+
+  auto IsValidCast = [this](QualType FirstType, QualType SecondType) {
+    if (const auto *BT = FirstType->getAs<BuiltinType>()) {
+      if (const auto *VT = SecondType->getAs<VectorType>()) {
+        if (VT->getVectorKind() == VectorKind::Generic) {
+          return FirstType->isMPEBuiltinType() &&
+                 getTypeSize(FirstType) == getTypeSize(SecondType) &&
+                 hasSameType(VT->getElementType(),
+                             getBuiltinVectorTypeInfo(BT).ElementType);
+        }
+      }
+    }
+    return false;
+  };
+
+  return IsValidCast(FirstType, SecondType) ||
+         IsValidCast(SecondType, FirstType);
+}
+
 bool ASTContext::hasDirectOwnershipQualifier(QualType Ty) const {
   while (true) {
     // __strong id
