@@ -1461,6 +1461,12 @@ void ASTContext::InitBuiltinTypes(const TargetInfo &Target,
 #include "clang/Basic/RISCVVTypes.def"
   }
 
+  if (Target.hasRISCVMPETypes()) {
+#define RVMPE_TYPE(Name, Id, SingletonId)                                      \
+  InitBuiltinType(SingletonId, BuiltinType::Id);
+#include "clang/Basic/RISCVXMPETypes.def"
+  }
+
   if (Target.getTriple().isWasm() && Target.hasFeature("reference-types")) {
 #define WASM_TYPE(Name, Id, SingletonId)                                       \
   InitBuiltinType(SingletonId, BuiltinType::Id);
@@ -2294,6 +2300,17 @@ TypeInfo ASTContext::getTypeInfoImpl(const Type *T) const {
     Align = 8;                                                                 \
     break;
 #include "clang/Basic/RISCVVTypes.def"
+#define RVMPE_MATRIX_TYPE(Name, Id, SingletonId, NumEls, ElBits)               \
+  case BuiltinType::Id:                                                        \
+    Width = NumEls * ElBits;                                                   \
+    Align = ElBits;                                                            \
+    break;
+#define RVMPE_PREDICATE_TYPE(Name, Id, SingletonId, NumEls)                    \
+  case BuiltinType::Id:                                                        \
+    Width = NumEls;                                                            \
+    Align = 8;                                                                 \
+    break;
+#include "clang/Basic/RISCVXMPETypes.def"
 #define WASM_TYPE(Name, Id, SingletonId)                                       \
   case BuiltinType::Id:                                                        \
     Width = 0;                                                                 \
@@ -3439,6 +3456,8 @@ static void encodeTypeForFunctionPointerAuth(const ASTContext &Ctx,
     case BuiltinType::WasmExternRef:
 #define RVV_TYPE(Name, Id, SingletonId) case BuiltinType::Id:
 #include "clang/Basic/RISCVVTypes.def"
+#define RVMPE_TYPE(Name, Id, SingletonId) case BuiltinType::Id:
+#include "clang/Basic/RISCVXMPETypes.def"
       llvm_unreachable("not yet implemented");
     }
     llvm_unreachable("should never get here");
@@ -4449,6 +4468,18 @@ ASTContext::getBuiltinVectorTypeInfo(const BuiltinType *Ty) const {
   case BuiltinType::Id:                                                        \
     return {BoolTy, llvm::ElementCount::getScalable(NumEls), 1};
 #include "clang/Basic/RISCVVTypes.def"
+
+#define RVMPE_MATRIX_TYPE_I(Name, Id, SingletonId, NumEls, ElBits)             \
+  case BuiltinType::Id:                                                        \
+    return {getIntTypeForBitwidth(ElBits, true),                               \
+            llvm::ElementCount::getFixed(NumEls), 1};
+#define RVMPE_MATRIX_TYPE_F(Name, Id, SingletonId, NumEls, ElBits)             \
+  case BuiltinType::Id:                                                        \
+    return {FloatTy, llvm::ElementCount::getFixed(NumEls), 1};
+#define RVMPE_PREDICATE_TYPE(Name, Id, SingletonId, NumEls)                    \
+  case BuiltinType::Id:                                                        \
+    return {BoolTy, llvm::ElementCount::getFixed(NumEls), 1};
+#include "clang/Basic/RISCVXMPETypes.def"
   }
 }
 
@@ -8814,6 +8845,8 @@ static char getObjCEncodingForPrimitiveType(const ASTContext *C,
 #include "clang/Basic/AArch64SVEACLETypes.def"
 #define RVV_TYPE(Name, Id, SingletonId) case BuiltinType::Id:
 #include "clang/Basic/RISCVVTypes.def"
+#define RVMPE_TYPE(Name, Id, SingletonId) case BuiltinType::Id:
+#include "clang/Basic/RISCVXMPETypes.def"
 #define WASM_TYPE(Name, Id, SingletonId) case BuiltinType::Id:
 #include "clang/Basic/WebAssemblyReferenceTypes.def"
 #define AMDGPU_TYPE(Name, Id, SingletonId, Width, Align) case BuiltinType::Id:

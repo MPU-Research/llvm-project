@@ -498,6 +498,12 @@ void Sema::Initialize() {
 #include "clang/Basic/RISCVVTypes.def"
   }
 
+  if (Context.getTargetInfo().hasRISCVMPETypes()) {
+#define RVMPE_TYPE(Name, Id, SingletonId)                                      \
+  addImplicitTypedef(Name, Context.SingletonId);
+#include "clang/Basic/RISCVXMPETypes.def"
+  }
+
   if (Context.getTargetInfo().getTriple().isWasm() &&
       Context.getTargetInfo().hasFeature("reference-types")) {
 #define WASM_TYPE(Name, Id, SingletonId)                                       \

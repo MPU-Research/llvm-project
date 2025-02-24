@@ -3450,6 +3450,11 @@ void CXXNameMangler::mangleType(const BuiltinType *T) {
     mangleVendorType(Name);                                                    \
     break;
 #include "clang/Basic/RISCVVTypes.def"
+#define RVMPE_TYPE(Name, Id, SingletonId)                                      \
+  case BuiltinType::Id:                                                        \
+    mangleVendorType(Name);                                                    \
+    break;
+#include "clang/Basic/RISCVXMPETypes.def"
 #define WASM_REF_TYPE(InternalName, MangledName, Id, SingletonId, AS)          \
   case BuiltinType::Id:                                                        \
     mangleVendorType(MangledName);                                             \

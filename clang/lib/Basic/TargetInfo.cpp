@@ -156,6 +156,7 @@ TargetInfo::TargetInfo(const llvm::Triple &T) : Triple(T) {
   HasBuiltinMSVaList = false;
   HasAArch64SVETypes = false;
   HasRISCVVTypes = false;
+  HasRISCVMPETypes = false;
   AllowAMDGPUUnsafeFPAtomics = false;
   HasUnalignedAccess = false;
   ARMCDECoprocMask = 0;

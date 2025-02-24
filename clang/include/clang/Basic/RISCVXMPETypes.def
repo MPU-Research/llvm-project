@@ -1,0 +1,41 @@
+// ===-- RISCVXMPETypes.def - Metadata for the RISCV-V MPE types ----------===//
+//
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+//
+// ===---------------------------------------------------------------------===//
+
+#ifndef RVMPE_TYPE
+#define RVMPE_TYPE(Name, Id, SingletonId)
+#endif
+
+#ifndef RVMPE_MATRIX_TYPE
+#define RVMPE_MATRIX_TYPE(Name, Id, SingletonId, NumEls, ElBits)               \
+  RVMPE_TYPE(Name, Id, SingletonId)
+#endif
+
+#ifndef RVMPE_PREDICATE_TYPE
+#define RVMPE_PREDICATE_TYPE(Name, Id, SingletonId, NumEls)                    \
+  RVMPE_TYPE(Name, Id, SingletonId)
+#endif
+
+#ifndef RVMPE_MATRIX_TYPE_I
+#define RVMPE_MATRIX_TYPE_I(Name, Id, SingletonId, NumEls, ElBits)             \
+  RVMPE_MATRIX_TYPE(Name, Id, SingletonId, NumEls, ElBits)
+#endif
+
+#ifndef RVMPE_MATRIX_TYPE_F
+#define RVMPE_MATRIX_TYPE_F(Name, Id, SingletonId, NumEls, ElBits)             \
+  RVMPE_MATRIX_TYPE(Name, Id, SingletonId, NumEls, ElBits)
+#endif
+
+RVMPE_MATRIX_TYPE_I("__rvmpe_4x4xi32_t", Rvmpe4x4xi32, Rvmpe4x4xi32Ty, 16, 32)
+RVMPE_MATRIX_TYPE_F("__rvmpe_4x4xf32_t", Rvmpe4x4xf32, Rvmpe4x4xf32Ty, 16, 32)
+RVMPE_PREDICATE_TYPE("__rvmpe_mask_t", Rvmpe4x4xi1, Rvmpe4x4xi1Ty, 16)
+
+#undef RVMPE_MATRIX_TYPE_F
+#undef RVMPE_MATRIX_TYPE_I
+#undef RVMPE_PREDICATE_TYPE
+#undef RVMPE_MATRIX_TYPE
+#undef RVMPE_TYPE

@@ -895,6 +895,12 @@ llvm::DIType *CGDebugInfo::CreateType(const BuiltinType *BT) {
                                        SubscriptArray);
     }
 
+#define RVMPE_TYPE(Name, Id, SingletonId) case BuiltinType::Id:
+#include "clang/Basic/RISCVXMPETypes.def"
+    {
+      llvm_unreachable("Not implemented!");
+    }
+
 #define WASM_REF_TYPE(Name, MangledName, Id, SingletonId, AS)                  \
   case BuiltinType::Id: {                                                      \
     if (!SingletonId)                                                          \

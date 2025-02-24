@@ -269,6 +269,9 @@ protected:
   unsigned HasRISCVVTypes : 1;
 
   LLVM_PREFERRED_TYPE(bool)
+  unsigned HasRISCVMPETypes : 1;
+
+  LLVM_PREFERRED_TYPE(bool)
   unsigned AllowAMDGPUUnsafeFPAtomics : 1;
 
   LLVM_PREFERRED_TYPE(bool)
@@ -1049,6 +1052,10 @@ public:
   /// Returns whether or not the RISC-V V built-in types are
   /// available on this target.
   bool hasRISCVVTypes() const { return HasRISCVVTypes; }
+
+  /// Returns whether or not the RISC-V MPE built-in types are
+  /// available on this target.
+  bool hasRISCVMPETypes() const { return HasRISCVMPETypes; }
 
   /// Returns whether or not the AMDGPU unsafe floating point atomics are
   /// allowed.

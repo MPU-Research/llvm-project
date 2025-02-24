@@ -559,6 +559,13 @@ llvm::Type *CodeGenTypes::ConvertType(QualType T) {
         return llvm::ScalableVectorType::get(ConvertType(Info.ElementType),
                                              Info.EC.getKnownMinValue());
       }
+#define RVMPE_TYPE(Name, Id, SingletonId) case BuiltinType::Id:
+#include "clang/Basic/RISCVXMPETypes.def"
+      {
+          ASTContext::BuiltinVectorTypeInfo Info =
+            Context.getBuiltinVectorTypeInfo(cast<BuiltinType>(Ty));
+          return llvm::VectorType::get(ConvertType(Info.ElementType), Info.EC);
+      }
 #define WASM_REF_TYPE(Name, MangledName, Id, SingletonId, AS)                  \
   case BuiltinType::Id: {                                                      \
     if (BuiltinType::Id == BuiltinType::WasmExternRef)                         \
