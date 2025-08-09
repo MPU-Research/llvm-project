@@ -110,7 +110,7 @@ class MPEBaseInstMLU<string opcodestr, string argstr, dag outs, dag ins>
   let Inst{11-7} = md;
   let Inst{6-0} = OPC_OP_MATRIX.Value;
 
-  let Uses = [MTYPE, ML];
+  //let Uses = [MTYPE, ML];
 }
 
 // strided load: <load> md, (rs1), rs2, m0.t
@@ -131,7 +131,7 @@ class MPEBaseInstMLS<string opcodestr, string argstr, MPEMemOp mmop, dag outs, d
   let Inst{11-7} = md;
   let Inst{6-0} = OPC_OP_MATRIX.Value;
 
-  let Uses = [MTYPE, ML];
+  //let Uses = [MTYPE, ML];
 }
 
 // unit-stride store: <store> ms, (rs1), m0.t
@@ -151,7 +151,7 @@ class MPEBaseInstMSU<string opcodestr, string argstr, dag outs, dag ins>
   let Inst{11-7} = md;
   let Inst{6-0} = OPC_OP_MATRIX.Value;
 
-  let Uses = [MTYPE, ML];
+  //let Uses = [MTYPE, ML];
 }
 
 // strided store: <store> md, (rs1), rs2, m0.t
@@ -172,7 +172,7 @@ class MPEBaseInstMSS<string opcodestr, string argstr, MPEMemOp mmop, dag outs, d
   let Inst{11-7} = md;
   let Inst{6-0} = OPC_OP_MATRIX.Value;
 
-  let Uses = [MTYPE, ML];
+  //let Uses = [MTYPE, ML];
 }
 
 // alu instruction: <op> md, ms1, ms2, m0.t
@@ -193,7 +193,7 @@ class MPEBaseInstAlu<string opcodestr, string argstr, MPEAluOp maop, MPEDataType
   let Inst{11-7} = md;
   let Inst{6-0} = OPC_OP_MATRIX.Value;
 
-  let Uses = [MTYPE, ML];
+  //let Uses = [MTYPE, ML];
 }
 
 // mov instruction: <mov> md, ms1, m0.t
@@ -212,5 +212,5 @@ class MPEBaseInstMov<string opcodestr, string argstr, MPEMovOp mmov, dag outs, d
   let Inst{11-7} = rd;
   let Inst{6-0} = OPC_OP_MATRIX.Value;
 
-  let Uses = [MTYPE, ML];
+  //let Uses = [MTYPE, ML];
 }
