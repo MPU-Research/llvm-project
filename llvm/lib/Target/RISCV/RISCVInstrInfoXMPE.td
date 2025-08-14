@@ -99,11 +99,24 @@ multiclass MPEInstAlu_S_U_F<string opcodestr, MPEAluOp maop> {
   def F  : MPEInstAlu<opcodestr # "f", maop, MPEFloat>;
 }
 
+class MPEInstAluWb<string opcodestr, MPEAluOp maop, MPEDataType dt>
+    : MPEBaseInstAlu<opcodestr, "$md, $ms1, $ms2$mrm", maop, dt,
+                     (outs MR:$md_wb),
+                     (ins MR:$md, MR:$ms1, MR:$ms2, MMaskOp:$mrm)> {
+  let Constraints = "$md = $md_wb";
+}
+
+multiclass MPEInstAluWb_S_U_F<string opcodestr, MPEAluOp maop> {
+  def "" : MPEInstAluWb<opcodestr,       maop, MPEIntSigned>;
+  def U  : MPEInstAluWb<opcodestr # "u", maop, MPEIntUnsigned>;
+  def F  : MPEInstAluWb<opcodestr # "f", maop, MPEFloat>;
+}
+
 let Predicates = [HasVendorXMPE] in {
   let hasSideEffects = 0, mayLoad = 0, mayStore = 0 in {
     defm MADD : MPEInstAlu_S_U_F<"madd", MPEAluAdd>;
     defm MSUB : MPEInstAlu_S_U_F<"msub", MPEAluSub>;
-    defm MMAC : MPEInstAlu_S_U_F<"mmac", MPEAluMac>;
+    defm MMAC : MPEInstAluWb_S_U_F<"mmac", MPEAluMac>;
   }
 }
 
