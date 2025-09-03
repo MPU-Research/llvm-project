@@ -23189,6 +23189,19 @@ Value *CodeGenFunction::EmitRISCVCpuIs(StringRef CPUStr) {
   return Result;
 }
 
+namespace {
+
+static inline SmallVector<llvm::Type *, 2> ConvertTypes(CodeGenFunction &CGM,
+                                                        const CallExpr *E) {
+  SmallVector<llvm::Type *, 2> IntrinsicTypes = {CGM.ConvertType(E->getType())};
+  for (unsigned int i = 0; i < E->getNumArgs(); ++i) {
+    IntrinsicTypes.push_back(CGM.ConvertType(E->getArg(i)->getType()));
+  }
+  return IntrinsicTypes;
+}
+
+} // namespace
+
 Value *CodeGenFunction::EmitRISCVBuiltinExpr(unsigned BuiltinID,
                                              const CallExpr *E,
                                              ReturnValueSlot ReturnValue) {
@@ -23558,6 +23571,62 @@ Value *CodeGenFunction::EmitRISCVBuiltinExpr(unsigned BuiltinID,
   case RISCV::BI__builtin_riscv_mpe_store_rowstride_f32_mask:
     IntrinsicTypes.push_back(this->ConvertType(E->getArg(0)->getType()));
     ID = Intrinsic::riscv_mpe_store_s_mask;
+    break;
+  case RISCV::BI__builtin_riscv_mpe_move_mm_i32:
+  case RISCV::BI__builtin_riscv_mpe_move_mm_f32:
+    IntrinsicTypes = ConvertTypes(*this, E);
+    ID = Intrinsic::riscv_mpe_move_mm;
+    break;
+  case RISCV::BI__builtin_riscv_mpe_move_mm_i32_mask:
+  case RISCV::BI__builtin_riscv_mpe_move_mm_f32_mask:
+    IntrinsicTypes = ConvertTypes(*this, E);
+    ID = Intrinsic::riscv_mpe_move_mm_mask;
+    break;
+  case RISCV::BI__builtin_riscv_mpe_move_zm_i32:
+  case RISCV::BI__builtin_riscv_mpe_move_zm_f32:
+    IntrinsicTypes = ConvertTypes(*this, E);
+    ID = Intrinsic::riscv_mpe_move_zm;
+    break;
+  case RISCV::BI__builtin_riscv_mpe_move_zm_i32_mask:
+  case RISCV::BI__builtin_riscv_mpe_move_zm_f32_mask:
+    IntrinsicTypes = ConvertTypes(*this, E);
+    ID = Intrinsic::riscv_mpe_move_zm_mask;
+    break;
+  case RISCV::BI__builtin_riscv_mpe_move_xm:
+    ID = Intrinsic::riscv_mpe_move_xm;
+    break;
+  case RISCV::BI__builtin_riscv_mpe_move_xm_mask:
+    ID = Intrinsic::riscv_mpe_move_xm_mask;
+    break;
+  case RISCV::BI__builtin_riscv_mpe_move_zx:
+    ID = Intrinsic::riscv_mpe_move_zx;
+    break;
+  case RISCV::BI__builtin_riscv_mpe_move_zx_mask:
+    ID = Intrinsic::riscv_mpe_move_zx_mask;
+    break;
+  case RISCV::BI__builtin_riscv_mpe_move_xz:
+    ID = Intrinsic::riscv_mpe_move_xz;
+    break;
+  case RISCV::BI__builtin_riscv_mpe_move_xz_mask:
+    ID = Intrinsic::riscv_mpe_move_xz_mask;
+    break;
+  case RISCV::BI__builtin_riscv_mpe_move_fm:
+    ID = Intrinsic::riscv_mpe_move_fm;
+    break;
+  case RISCV::BI__builtin_riscv_mpe_move_fm_mask:
+    ID = Intrinsic::riscv_mpe_move_fm_mask;
+    break;
+  case RISCV::BI__builtin_riscv_mpe_move_zf:
+    ID = Intrinsic::riscv_mpe_move_zf;
+    break;
+  case RISCV::BI__builtin_riscv_mpe_move_zf_mask:
+    ID = Intrinsic::riscv_mpe_move_zf_mask;
+    break;
+  case RISCV::BI__builtin_riscv_mpe_move_fz:
+    ID = Intrinsic::riscv_mpe_move_fz;
+    break;
+  case RISCV::BI__builtin_riscv_mpe_move_fz_mask:
+    ID = Intrinsic::riscv_mpe_move_fz_mask;
     break;
 
     // Vector builtins are handled from here.

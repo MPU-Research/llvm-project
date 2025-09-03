@@ -79,3 +79,20 @@ let Features = "xmpe" in {
   defm load : RISCVMPEBuiltinLoad;
   defm store : RISCVMPEBuiltinStore;
 } // Features = "xmpe"
+
+//===----------------------------------------------------------------------===//
+// MOVE BUILTINS
+//===----------------------------------------------------------------------===//
+
+let Features = "xmpe" in {
+  defm move_mm_i32 : RISCVMPEBuiltinFormat<v16i32, [v16i32]>;
+  defm move_mm_f32 : RISCVMPEBuiltinFormat<v16f32, [v16f32]>;
+  defm move_zm_i32 : RISCVMPEBuiltinFormat<v16i32, [v16i32]>;
+  defm move_zm_f32 : RISCVMPEBuiltinFormat<v16f32, [v16f32]>;
+  defm move_xm     : RISCVMPEBuiltinFormat<v16i32, ["long int"]>;
+  defm move_xz     : RISCVMPEBuiltinFormat<v16i32, ["long int"]>;
+  defm move_zx     : RISCVMPEBuiltinFormat<"long int", [v16i32]>;
+  defm move_fm     : RISCVMPEBuiltinFormat<v16f32, ["float"]>;
+  defm move_fz     : RISCVMPEBuiltinFormat<v16f32, ["float"]>;
+  defm move_zf     : RISCVMPEBuiltinFormat<"float", [v16f32]>;
+} // Features = "xmpe"
