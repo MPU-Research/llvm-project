@@ -162,6 +162,12 @@ public:
 
   void selectVSETVLI(SDNode *Node);
 
+  // MPE instruction selection
+  void selectMPEArith(SDNode *Node, bool IsMasked);
+  void selectMPELoad(SDNode *Node, unsigned IntNo, bool IsMasked);
+  void selectMPEStore(SDNode *Node, unsigned IntNo, bool IsMasked);
+  void selectMPEMove(SDNode *Node, bool IsMasked);
+
   void selectSF_VC_X_SE(SDNode *Node);
 
   // Return the RISC-V condition code that matches the given DAG integer

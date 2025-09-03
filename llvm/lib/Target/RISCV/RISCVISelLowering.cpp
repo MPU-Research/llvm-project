@@ -268,6 +268,14 @@ RISCVTargetLowering::RISCVTargetLowering(const TargetMachine &TM,
     addRegisterClass(MVT::riscv_nxv32i8x2, &RISCV::VRN2M4RegClass);
   }
 
+  if (Subtarget.hasVendorXMPE()) {
+    addRegisterClass(MVT::v16i1, &RISCV::MRRegClass);
+    addRegisterClass(MVT::v16i32, &RISCV::MRRegClass);
+    addRegisterClass(MVT::v16f32, &RISCV::MRRegClass);
+    setOperationAction({ISD::LOAD, ISD::STORE},
+                       {MVT::v16i1, MVT::v16i32, MVT::v16f32}, Custom);
+  }
+
   // Compute derived properties from the register classes.
   computeRegisterProperties(STI.getRegisterInfo());
 
@@ -1457,6 +1465,12 @@ RISCVTargetLowering::RISCVTargetLowering(const TargetMachine &TM,
     }
   }
 
+  if (Subtarget.hasVendorXMPE()) {
+    setOperationAction(
+        {ISD::INTRINSIC_WO_CHAIN, ISD::INTRINSIC_W_CHAIN, ISD::INTRINSIC_VOID},
+        {MVT::v16i1, MVT::v16i32, MVT::v16f32}, Custom);
+  }
+
   if (Subtarget.hasStdExtA())
     setOperationAction(ISD::ATOMIC_LOAD_SUB, XLenVT, Expand);
 
@@ -2572,6 +2586,33 @@ bool RISCVTargetLowering::isLegalElementTypeForRVV(EVT ScalarTy) const {
   }
 }
 
+// Check whether this type is a legal MPE vector, i.e., must be a fixed length
+// vector with 16 elements and element type either i1, i32, or f32.
+bool RISCVTargetLowering::isLegalVectorForMPE(EVT Ty) const {
+  if (!Subtarget.hasMPEInstructions())
+    return false;
+  if (!Ty.isFixedLengthVector())
+    return false;
+  if (Ty.getVectorElementCount().getKnownMinValue() != 16)
+    return false;
+  auto ElemTy = Ty.getVectorElementType();
+  if (ElemTy != MVT::i32 && ElemTy != MVT::f32 && ElemTy != MVT::i1)
+    return false;
+  return true;
+}
+
+// Lower load to MPE if its return type is a legal MPE vector.
+bool RISCVTargetLowering::shouldLowerLoadToMPEIntrinsic(SDNode *Op) const {
+  assert(Op->getOpcode() == ISD::LOAD && "Expected a load node");
+  return isLegalVectorForMPE(Op->getValueType(0));
+}
+
+// Lower store to MPE if the type of the value to be stored is a legal MPE
+// vector.
+bool RISCVTargetLowering::shouldLowerStoreToMPEIntrinsic(SDNode *Op) const {
+  assert(Op->getOpcode() == ISD::STORE && "Expected a store node");
+  return isLegalVectorForMPE(Op->getOperand(1)->getValueType(0));
+}
 
 unsigned RISCVTargetLowering::combineRepeatedFPDivisors() const {
   return NumRepeatedDivisors;
@@ -7365,6 +7406,8 @@ SDValue RISCVTargetLowering::LowerOperation(SDValue Op,
           {Ret, DAG.getNode(ISD::TokenFactor, DL, MVT::Other, OutChains)}, DL);
     }
 
+    if (shouldLowerLoadToMPEIntrinsic(Op.getNode()))
+        return lowerVectorLoadToMPEIntrinsic(Op, DAG);
     if (auto V = expandUnalignedRVVLoad(Op, DAG))
       return V;
     if (Op.getValueType().isFixedLengthVector())
@@ -7409,6 +7452,8 @@ SDValue RISCVTargetLowering::LowerOperation(SDValue Op,
       return Ret;
     }
 
+    if (shouldLowerStoreToMPEIntrinsic(Op.getNode()))
+        return lowerVectorStoreToMPEIntrinsic(Op, DAG);
     if (auto V = expandUnalignedRVVStore(Op, DAG))
       return V;
     if (Op.getOperand(1).getValueType().isFixedLengthVector())
@@ -11835,6 +11880,64 @@ SDValue RISCVTargetLowering::lowerFixedLengthVectorSelectToRVV(
                                Op2, DAG.getUNDEF(ContainerVT), VL);
 
   return convertFromScalableVector(VT, Select, DAG, Subtarget);
+}
+
+SDValue
+RISCVTargetLowering::lowerVectorLoadToMPEIntrinsic(SDValue Op,
+                                                     SelectionDAG &DAG) const {
+  SDLoc DL(Op);
+
+  auto *Load = cast<LoadSDNode>(Op);
+
+  MVT VT = Op.getSimpleValueType();
+  MVT XLenVT = Subtarget.getXLenVT();
+
+  bool IsMaskOp = VT.getVectorElementType() == MVT::i1;
+
+  SDValue IntID =
+      DAG.getTargetConstant(IsMaskOp ? Intrinsic::riscv_mpe_load_us_mask
+                                     : Intrinsic::riscv_mpe_load_us,
+                            DL, XLenVT);
+
+  SmallVector<SDValue, 4> Ops{Load->getChain(), IntID, Load->getBasePtr()};
+
+  if (IsMaskOp)
+    llvm_unreachable("Not implemented yet");
+
+  SDVTList VTs = DAG.getVTList({VT, MVT::Other});
+
+  return DAG.getMemIntrinsicNode(ISD::INTRINSIC_W_CHAIN, DL, VTs, Ops,
+                                 Load->getMemoryVT(), Load->getMemOperand());
+}
+
+SDValue
+RISCVTargetLowering::lowerVectorStoreToMPEIntrinsic(SDValue Op,
+                                                      SelectionDAG &DAG) const {
+  SDLoc DL(Op);
+
+  auto *Store = cast<StoreSDNode>(Op);
+
+  MVT VT = Op.getSimpleValueType();
+  MVT XLenVT = Subtarget.getXLenVT();
+
+  // bool IsMaskOp = VT.getVectorElementType() == MVT::i1;
+  bool IsMaskOp = false;
+
+  SDValue IntID =
+      DAG.getTargetConstant(IsMaskOp ? Intrinsic::riscv_mpe_store_us_mask
+                                     : Intrinsic::riscv_mpe_store_us,
+                            DL, XLenVT);
+
+  SmallVector<SDValue, 4> Ops{Store->getChain(), IntID, Store->getValue(),
+                              Store->getBasePtr()};
+
+  if (IsMaskOp)
+    llvm_unreachable("Not implemented yet");
+
+  SDVTList VTs = DAG.getVTList({VT, MVT::Other});
+
+  return DAG.getMemIntrinsicNode(ISD::INTRINSIC_VOID, DL, VTs, Ops,
+                                 Store->getMemoryVT(), Store->getMemOperand());
 }
 
 SDValue RISCVTargetLowering::lowerToScalableOp(SDValue Op,
