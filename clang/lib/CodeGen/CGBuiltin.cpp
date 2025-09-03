@@ -23463,6 +23463,103 @@ Value *CodeGenFunction::EmitRISCVBuiltinExpr(unsigned BuiltinID,
     ID = Intrinsic::riscv_cv_alu_subuRN;
     break;
 
+  case RISCV::BI__builtin_riscv_mpe_add_i32:
+    ID = Intrinsic::riscv_mpe_add_i32;
+    break;
+  case RISCV::BI__builtin_riscv_mpe_add_i32_mask:
+    ID = Intrinsic::riscv_mpe_add_i32_mask;
+    break;
+  case RISCV::BI__builtin_riscv_mpe_add_f32:
+    ID = Intrinsic::riscv_mpe_add_f32;
+    break;
+  case RISCV::BI__builtin_riscv_mpe_add_f32_mask:
+    ID = Intrinsic::riscv_mpe_add_f32_mask;
+    break;
+  case RISCV::BI__builtin_riscv_mpe_sub_i32:
+    ID = Intrinsic::riscv_mpe_sub_i32;
+    break;
+  case RISCV::BI__builtin_riscv_mpe_sub_i32_mask:
+    ID = Intrinsic::riscv_mpe_sub_i32_mask;
+    break;
+  case RISCV::BI__builtin_riscv_mpe_sub_f32:
+    ID = Intrinsic::riscv_mpe_sub_f32;
+    break;
+  case RISCV::BI__builtin_riscv_mpe_sub_f32_mask:
+    ID = Intrinsic::riscv_mpe_sub_f32_mask;
+    break;
+  case RISCV::BI__builtin_riscv_mpe_mac_i32:
+    ID = Intrinsic::riscv_mpe_mac_i32;
+    break;
+  case RISCV::BI__builtin_riscv_mpe_mac_i32_mask:
+    ID = Intrinsic::riscv_mpe_mac_i32_mask;
+    break;
+  case RISCV::BI__builtin_riscv_mpe_mac_f32:
+    ID = Intrinsic::riscv_mpe_mac_f32;
+    break;
+  case RISCV::BI__builtin_riscv_mpe_mac_f32_mask:
+    ID = Intrinsic::riscv_mpe_mac_f32_mask;
+    break;
+  case RISCV::BI__builtin_riscv_mpe_load_i32:
+  case RISCV::BI__builtin_riscv_mpe_load_f32:
+    IntrinsicTypes.push_back(this->ConvertType(E->getType()));
+    ID = Intrinsic::riscv_mpe_load_us;
+    break;
+  case RISCV::BI__builtin_riscv_mpe_load_i32_mask:
+  case RISCV::BI__builtin_riscv_mpe_load_f32_mask:
+    IntrinsicTypes.push_back(this->ConvertType(E->getType()));
+    ID = Intrinsic::riscv_mpe_load_us_mask;
+    break;
+  case RISCV::BI__builtin_riscv_mpe_load_stride_i32:
+  case RISCV::BI__builtin_riscv_mpe_load_stride_f32:
+    IntrinsicTypes.push_back(this->ConvertType(E->getType()));
+    ID = Intrinsic::riscv_mpe_load_ss;
+    break;
+  case RISCV::BI__builtin_riscv_mpe_load_stride_i32_mask:
+  case RISCV::BI__builtin_riscv_mpe_load_stride_f32_mask:
+    IntrinsicTypes.push_back(this->ConvertType(E->getType()));
+    ID = Intrinsic::riscv_mpe_load_ss_mask;
+    break;
+  case RISCV::BI__builtin_riscv_mpe_load_rowstride_i32:
+  case RISCV::BI__builtin_riscv_mpe_load_rowstride_f32:
+    IntrinsicTypes.push_back(this->ConvertType(E->getType()));
+    ID = Intrinsic::riscv_mpe_load_s;
+    break;
+  case RISCV::BI__builtin_riscv_mpe_load_rowstride_i32_mask:
+  case RISCV::BI__builtin_riscv_mpe_load_rowstride_f32_mask:
+    IntrinsicTypes.push_back(this->ConvertType(E->getType()));
+    ID = Intrinsic::riscv_mpe_load_s_mask;
+    break;
+  case RISCV::BI__builtin_riscv_mpe_store_i32:
+  case RISCV::BI__builtin_riscv_mpe_store_f32:
+    IntrinsicTypes.push_back(this->ConvertType(E->getArg(0)->getType()));
+    ID = Intrinsic::riscv_mpe_store_us;
+    break;
+  case RISCV::BI__builtin_riscv_mpe_store_i32_mask:
+  case RISCV::BI__builtin_riscv_mpe_store_f32_mask:
+    IntrinsicTypes.push_back(this->ConvertType(E->getArg(0)->getType()));
+    ID = Intrinsic::riscv_mpe_store_us_mask;
+    break;
+  case RISCV::BI__builtin_riscv_mpe_store_stride_i32:
+  case RISCV::BI__builtin_riscv_mpe_store_stride_f32:
+    IntrinsicTypes.push_back(this->ConvertType(E->getArg(0)->getType()));
+    ID = Intrinsic::riscv_mpe_store_ss;
+    break;
+  case RISCV::BI__builtin_riscv_mpe_store_stride_i32_mask:
+  case RISCV::BI__builtin_riscv_mpe_store_stride_f32_mask:
+    IntrinsicTypes.push_back(this->ConvertType(E->getArg(0)->getType()));
+    ID = Intrinsic::riscv_mpe_store_ss_mask;
+    break;
+  case RISCV::BI__builtin_riscv_mpe_store_rowstride_i32:
+  case RISCV::BI__builtin_riscv_mpe_store_rowstride_f32:
+    IntrinsicTypes.push_back(this->ConvertType(E->getArg(0)->getType()));
+    ID = Intrinsic::riscv_mpe_store_s;
+    break;
+  case RISCV::BI__builtin_riscv_mpe_store_rowstride_i32_mask:
+  case RISCV::BI__builtin_riscv_mpe_store_rowstride_f32_mask:
+    IntrinsicTypes.push_back(this->ConvertType(E->getArg(0)->getType()));
+    ID = Intrinsic::riscv_mpe_store_s_mask;
+    break;
+
     // Vector builtins are handled from here.
 #include "clang/Basic/riscv_vector_builtin_cg.inc"
 
