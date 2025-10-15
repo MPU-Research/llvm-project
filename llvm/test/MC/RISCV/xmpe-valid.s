@@ -28,14 +28,6 @@ mls    m20, (x7), x10
 # CHECK-ASM: encoding: [0x77,0xca,0xa3,0x20]
 mls    m20, (x7), x10, m0.t
 
-# CHECK-ASM-AND-OBJ: mlx m20, (t2), a0
-# CHECK-ASM: encoding: [0x77,0xea,0xa3,0x22]
-mlx    m20, (x7), x10
-
-# CHECK-ASM-AND-OBJ: mlx m20, (t2), a0, m0.t
-# CHECK-ASM: encoding: [0x77,0xea,0xa3,0x20]
-mlx    m20, (x7), x10, m0.t
-
 # CHECK-ASM-AND-OBJ: ms m5, (t0)
 # CHECK-ASM: encoding: [0xf7,0x92,0x02,0x22]
 ms     m5, (x5)
@@ -59,14 +51,6 @@ mss    m20, (x7), x10
 # CHECK-ASM-AND-OBJ: mss m20, (t2), a0, m0.t
 # CHECK-ASM: encoding: [0x77,0xda,0xa3,0x20]
 mss    m20, (x7), x10, m0.t
-
-# CHECK-ASM-AND-OBJ: msx m20, (t2), a0
-# CHECK-ASM: encoding: [0x77,0xfa,0xa3,0x22]
-msx    m20, (x7), x10
-
-# CHECK-ASM-AND-OBJ: msx m20, (t2), a0, m0.t
-# CHECK-ASM: encoding: [0x77,0xfa,0xa3,0x20]
-msx    m20, (x7), x10, m0.t
 
 # CHECK-ASM-AND-OBJ: mmac m1, m2, m3
 # CHECK-ASM: encoding: [0xf7,0x00,0x31,0x66]
