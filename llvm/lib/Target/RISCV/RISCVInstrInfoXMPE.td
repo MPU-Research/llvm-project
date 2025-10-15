@@ -146,3 +146,18 @@ let Predicates = [HasVendorXMPE] in {
   def : InstAlias<"mzero $md$mrm", (MMV_XM MR:$md, X0, MMaskOp:$mrm)>;
   def : InstAlias<"mz $md$mrm",    (MMV_XM MR:$md, X0, MMaskOp:$mrm)>;
 }
+
+//===----------------------------------------------------------------------===//
+// System instructions
+//===----------------------------------------------------------------------===//
+
+class MPEInstSys<string opcodestr, MPESysOp msys>
+    : MPEBaseInstSys<opcodestr, "$rd, $rs1, $rs2", msys,
+                     (outs GPR:$rd),
+                     (ins GPR:$rs1, GPR:$rs2)>;
+
+let Predicates = [HasVendorXMPE] in {
+  let hasSideEffects = 0, mayLoad = 0, mayStore = 0 in {
+    def MSET : MPEInstSys<"mset", MPESysSet>;
+  }
+}

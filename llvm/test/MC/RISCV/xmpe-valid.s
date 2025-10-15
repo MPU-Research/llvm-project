@@ -159,3 +159,7 @@ mzero  m1, m0.t
 # CHECK-ASM-AND-OBJ: mmv.xm m2, zero
 # CHECK-ASM: encoding: [0x77,0x01,0x10,0x42]
 mz     m2
+
+# CHECK-ASM-AND-OBJ: mset zero, ra, sp
+# CHECK-ASM: encoding: [0x77,0x80,0x20,0x00]
+mset x0, x1, x2

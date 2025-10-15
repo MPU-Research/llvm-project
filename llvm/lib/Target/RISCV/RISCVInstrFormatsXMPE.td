@@ -90,6 +90,16 @@ def MPEMovZF : MPEMovOp<0b00110>; // MR[0,0] -> FPR
 def MPEMovFZ : MPEMovOp<0b00111>; // FPR     -> MR[0,0]
 
 //===----------------------------------------------------------------------===//
+// System operation encoding
+//===----------------------------------------------------------------------===//
+
+class MPESysOp<bits<3> val> {
+  bits<3> Value = val;
+}
+
+def MPESysSet : MPESysOp<0b000>; // Operation: mset rd, rs1, rs2
+
+//===----------------------------------------------------------------------===//
 // Instruction formats
 //===----------------------------------------------------------------------===//
 
@@ -207,6 +217,23 @@ class MPEBaseInstMov<string opcodestr, string argstr, MPEMovOp mmov, dag outs, d
   let Inst{28-26} = 0;
   let Inst{25} = mrm;
   let Inst{24-20} = mmov.Value;
+  let Inst{19-15} = rs1;
+  let Inst{14-12} = 0;
+  let Inst{11-7} = rd;
+  let Inst{6-0} = OPC_OP_MATRIX.Value;
+
+  //let Uses = [MTYPE, ML];
+}
+
+class MPEBaseInstSys<string opcodestr, string argstr, MPESysOp msys, dag outs, dag ins>
+    : RVInst<outs, ins, opcodestr, argstr, [], InstFormatR> {
+  bits<5> rd;
+  bits<5> rs1;
+  bits<5> rs2;
+
+  let Inst{31-29} = msys.Value;
+  let Inst{28-25} = 0;
+  let Inst{24-20} = rs2;
   let Inst{19-15} = rs1;
   let Inst{14-12} = 0;
   let Inst{11-7} = rd;
